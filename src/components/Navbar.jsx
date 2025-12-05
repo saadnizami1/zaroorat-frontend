@@ -107,6 +107,9 @@ const Navbar = () => {
             <li>
               <a href="/about/payment_work">How payment work</a>
             </li>
+            <li>
+              <a href="/about/our-team">Our Team</a> {/* ✅ ADDED */}
+            </li>
           </ul>
         </li>
         <li id="nav-li" className="dropdown-container">
@@ -190,7 +193,10 @@ const Navbar = () => {
           <a href="/about/mission">Mission</a>
         </li>
         <li>
-          <a href="/about/partners">Partners</a>
+          <a href="/about/payment_work">How payment work</a>
+        </li>
+        <li>
+          <a href="/about/our-team">Our Team</a> {/* ✅ ADDED */}
         </li>
         <li>
           <a href="/fundraisers">Fundraisers</a>
