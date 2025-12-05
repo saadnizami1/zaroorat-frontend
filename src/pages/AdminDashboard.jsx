@@ -15,12 +15,16 @@ const Dashboard = () => {
   const [loadingRejectDeactivations, setLoadingRejectDeactivations] = useState(
     []
   );
+  // ✅ ADD THESE 3 NEW STATES
+  const [loadingVerifyDonations, setLoadingVerifyDonations] = useState([]);
+  const [loadingRejectDonations, setLoadingRejectDonations] = useState([]);
 
   const { user, apiURL } = useContext(CampaignContext);
   const navigate = useNavigate();
 
   const [pendingCampaigns, setPendingCampaigns] = useState([]);
   const [pendingDeactivations, setPendingDeactivations] = useState([]);
+  const [pendingDonations, setPendingDonations] = useState([]); // ✅ ADD THIS
 
   //Fetching Data on Page Render
   useEffect(() => {
@@ -67,6 +71,26 @@ const Dashboard = () => {
     };
 
     fetchPendingCampaigns();
+
+    // ✅ ADD THIS NEW FUNCTION
+    //Fetching Pending Donations for Verification
+    const fetchPendingDonations = async () => {
+      try {
+        const res = await axios.get(
+          `${apiURL}/api/admin/donations/pending`,
+          { withCredentials: true }
+        );
+
+        if (res.data) {
+          console.log(res.data);
+          setPendingDonations(res.data.pendingDonations);
+        }
+      } catch (error) {
+        console.log("Error fetching pending donations:", error);
+      }
+    };
+
+    fetchPendingDonations(); // ✅ ADD THIS CALL
   }, []);
 
   //Handling Approval & Rejection of Campaigns
@@ -180,6 +204,69 @@ const Dashboard = () => {
     // console.log('Rejected deactivation', acc._id);
   };
 
+  // ✅ ADD THESE 2 NEW HANDLER FUNCTIONS
+  //Handling Verification & Rejection of Donations
+  const handleVerifyDonation = (donation) => {
+    const verifyDonation = async () => {
+      setLoadingVerifyDonations((prev) => [...prev, donation._id]);
+      try {
+        const res = await axios.put(
+          `${apiURL}/api/admin/donations/verify/${donation._id}`,
+          {},
+          { withCredentials: true }
+        );
+
+        if (res.data) {
+          setPendingDonations((donations) =>
+            donations.filter((d) => d._id !== donation._id)
+          );
+          toast.success("Donation verified successfully!");
+        }
+        setLoadingVerifyDonations((prev) =>
+          prev.filter((id) => id !== donation._id)
+        );
+      } catch (error) {
+        console.log("Error verifying donation:", error);
+        toast.error("Failed to verify donation.");
+        setLoadingVerifyDonations((prev) =>
+          prev.filter((id) => id !== donation._id)
+        );
+      }
+    };
+
+    verifyDonation();
+  };
+
+  const handleRejectDonation = (donation) => {
+    const rejectDonation = async () => {
+      setLoadingRejectDonations((prev) => [...prev, donation._id]);
+      try {
+        const res = await axios.delete(
+          `${apiURL}/api/admin/donations/reject/${donation._id}`,
+          { withCredentials: true }
+        );
+
+        if (res.data) {
+          setPendingDonations((donations) =>
+            donations.filter((d) => d._id !== donation._id)
+          );
+          toast.success("Donation rejected.");
+        }
+        setLoadingRejectDonations((prev) =>
+          prev.filter((id) => id !== donation._id)
+        );
+      } catch (error) {
+        console.log("Error rejecting donation:", error);
+        toast.error("Failed to reject donation.");
+        setLoadingRejectDonations((prev) =>
+          prev.filter((id) => id !== donation._id)
+        );
+      }
+    };
+
+    rejectDonation();
+  };
+
   return (
     <>
       <Navbar />
@@ -227,6 +314,76 @@ const Dashboard = () => {
             ))}
             {pendingCampaigns.length === 0 && (
               <p className="empty">No pending campaigns</p>
+            )}
+          </div>
+        </section>
+
+        {/* ✅ ADD THIS NEW SECTION */}
+        <section className="admin-section">
+          <h2>Pending Donations ({pendingDonations.length})</h2>
+          <div className="admin-list">
+            {pendingDonations.map((donation) => (
+              <div key={donation._id} className="admin-card donation-card">
+                <div className="donation-details">
+                  <p className="card-title">{donation.fullName}</p>
+                  <p className="card-sub">
+                    <strong>Campaign:</strong> {donation.fundId?.fundraiseTitle}
+                  </p>
+                  <p className="card-sub">
+                    <strong>Amount:</strong> PKR{" "}
+                    {donation.amount?.toLocaleString()}
+                  </p>
+                  <p className="card-sub">
+                    <strong>Email:</strong> {donation.email}
+                  </p>
+                  <p className="card-sub">
+                    <strong>Contact:</strong> {donation.contactNumber}
+                  </p>
+                  <p className="card-sub">
+                    <strong>Date:</strong>{" "}
+                    {new Date(donation.createdAt).toLocaleDateString()}
+                  </p>
+
+                  {donation.proofImage && (
+                    <div className="proof-image">
+                      <img
+                        src={donation.proofImage}
+                        alt="Payment Proof"
+                        style={{
+                          width: "100%",
+                          maxWidth: "300px",
+                          marginTop: "10px",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="card-actions">
+                  <button
+                    className="btn approve"
+                    onClick={() => handleVerifyDonation(donation)}
+                    disabled={loadingVerifyDonations.includes(donation._id)}
+                  >
+                    {loadingVerifyDonations.includes(donation._id)
+                      ? "Verifying..."
+                      : "Verify"}
+                  </button>
+                  <button
+                    className="btn reject"
+                    onClick={() => handleRejectDonation(donation)}
+                    disabled={loadingRejectDonations.includes(donation._id)}
+                  >
+                    {loadingRejectDonations.includes(donation._id)
+                      ? "Rejecting..."
+                      : "Reject"}
+                  </button>
+                </div>
+              </div>
+            ))}
+            {pendingDonations.length === 0 && (
+              <p className="empty">No pending donations</p>
             )}
           </div>
         </section>
