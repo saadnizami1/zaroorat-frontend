@@ -54,11 +54,14 @@ const Donate = () => {
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       if (res) {
-        toast.success("Donation successful!");
+        // ✅ UPDATED MESSAGE AND DURATION
+        toast.success("Thank you for your donation! Your contribution will be reflected after our team verifies the payment.", {
+          duration: 5000, // Show for 5 seconds
+        });
         setModalOpen(false);
         setTimeout(() => {
           navigate('/')
-        }, 3000);
+        }, 5000); // ✅ CHANGED from 3000 to 5000
       }
     } catch (error) {
       console.log('Error:', error);
