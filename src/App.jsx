@@ -16,6 +16,7 @@ import Partners from "./pages/Partners";
 import Contact from "./pages/Contact";
 import MyFunds from "./pages/MyFunds";
 import AdminCampaignPreview from "./pages/AdminPreviewPage";
+import OurTeam from "./pages/OurTeam"; // ✅ ADD THIS
 
 const App = ()=>{
   return (
@@ -32,6 +33,7 @@ const App = ()=>{
         <Route path="/campaign" element={<StartFund/>} />
         <Route path="/forgot-password" element={<ForgotPassword/>} />
         <Route path="/reset-password/:resetToken" element={<ResetPassword/>} />
+        <Route path="/about/our-team" element={<OurTeam/>} />
         <Route path="/admin-dashboard" element={<Dashboard/>} />
         <Route path="/admin/preview/:fundId" element={<AdminCampaignPreview/>} />
         <Route path="/about/mission" element={<Mission/>} />
