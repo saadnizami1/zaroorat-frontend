@@ -121,8 +121,12 @@ const MyFunds = () => {
                     </Link>
 
                     <div className="card-meta">
-                      <span className={`status-badge status-${f.status || "pending"}`}>
-                        {f.status || "pending"}
+                      <span
+                        className={`status-badge status-${
+                          f.status || (f.isApproved ? "active" : "pending")
+                        }`}
+                      >
+                        {f.status || (f.isApproved ? "active" : "pending")}
                       </span>
                       {f.status !== "closed" && (
                         <button

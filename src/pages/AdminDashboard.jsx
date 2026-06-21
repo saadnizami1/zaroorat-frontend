@@ -445,7 +445,7 @@ const Dashboard = () => {
                   </p>
                 </div>
                 <div className="card-actions">
-                  {f.status === "active" ? (
+                  {f.status !== "paused" ? (
                     <button
                       className="btn reject"
                       onClick={() => updateFundStatus(f, "pause")}
