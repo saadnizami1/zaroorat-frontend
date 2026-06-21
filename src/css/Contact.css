@@ -72,11 +72,42 @@
   color: var(--color-text-dark);
 }
 
+/* Developer Credit Styling */
+.developer-credit {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.developer-credit p {
+  color: var(--color-text-dark);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.developer-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.developer-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
 @media (max-width: 600px) {
   .contact-title {
     font-size: 2rem;
   }
   .contact-text {
     font-size: 1rem;
+  }
+  
+  .developer-credit {
+    margin-top: 2rem;
+    padding-top: 1rem;
   }
 }

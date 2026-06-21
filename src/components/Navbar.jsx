@@ -196,7 +196,10 @@ const Navbar = () => {
           <a href="/about/payment_work">How payment work</a>
         </li>
         <li>
-          <a href="/about/our-team">Our Team</a> {/* ✅ ADDED */}
+          <a href="/about/partners">Partners</a>
+        </li>
+        <li>
+          <a href="/about/our-team">Our Team</a>
         </li>
         <li>
           <a href="/fundraisers">Fundraisers</a>

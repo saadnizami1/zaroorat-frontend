@@ -15,16 +15,17 @@ const Dashboard = () => {
   const [loadingRejectDeactivations, setLoadingRejectDeactivations] = useState(
     []
   );
-  // ✅ ADD THESE 3 NEW STATES
   const [loadingVerifyDonations, setLoadingVerifyDonations] = useState([]);
   const [loadingRejectDonations, setLoadingRejectDonations] = useState([]);
+  const [loadingFundStatus, setLoadingFundStatus] = useState([]);
 
   const { user, apiURL } = useContext(CampaignContext);
   const navigate = useNavigate();
 
   const [pendingCampaigns, setPendingCampaigns] = useState([]);
   const [pendingDeactivations, setPendingDeactivations] = useState([]);
-  const [pendingDonations, setPendingDonations] = useState([]); // ✅ ADD THIS
+  const [pendingDonations, setPendingDonations] = useState([]);
+  const [managedFunds, setManagedFunds] = useState([]);
 
   //Fetching Data on Page Render
   useEffect(() => {
@@ -61,9 +62,7 @@ const Dashboard = () => {
         );
 
         if (res.data) {
-          console.log(res.data);
-          const requests = res.data.pendingFunds.filter((c) => !c.isApproved);
-          setPendingCampaigns(requests);
+          setPendingCampaigns(res.data.pendingFunds || []);
         }
       } catch (error) {
         console.log("Error occured while fetching pending reuests : ", error);
@@ -72,25 +71,39 @@ const Dashboard = () => {
 
     fetchPendingCampaigns();
 
-    // ✅ ADD THIS NEW FUNCTION
     //Fetching Pending Donations for Verification
     const fetchPendingDonations = async () => {
       try {
-        const res = await axios.get(
-          `${apiURL}/api/admin/donations/pending`,
-          { withCredentials: true }
-        );
+        const res = await axios.get(`${apiURL}/api/admin/donations/pending`, {
+          withCredentials: true,
+        });
 
         if (res.data) {
-          console.log(res.data);
-          setPendingDonations(res.data.pendingDonations);
+          setPendingDonations(res.data.pendingDonations || []);
         }
       } catch (error) {
         console.log("Error fetching pending donations:", error);
       }
     };
 
-    fetchPendingDonations(); // ✅ ADD THIS CALL
+    fetchPendingDonations();
+
+    //Fetching live + paused campaigns for management
+    const fetchManagedFunds = async () => {
+      try {
+        const res = await axios.get(`${apiURL}/api/admin/fund-raise/manage`, {
+          withCredentials: true,
+        });
+
+        if (res.data) {
+          setManagedFunds(res.data.funds || []);
+        }
+      } catch (error) {
+        console.log("Error fetching managed campaigns:", error);
+      }
+    };
+
+    fetchManagedFunds();
   }, []);
 
   //Handling Approval & Rejection of Campaigns
@@ -267,6 +280,34 @@ const Dashboard = () => {
     rejectDonation();
   };
 
+  //Handling Pause / Resume of live campaigns
+  const updateFundStatus = (fund, action) => {
+    const run = async () => {
+      setLoadingFundStatus((prev) => [...prev, fund._id]);
+      try {
+        const res = await axios.put(
+          `${apiURL}/api/admin/fund-raise/${action}-fund/${fund._id}`,
+          {},
+          { withCredentials: true }
+        );
+        if (res.data?.fund) {
+          setManagedFunds((funds) =>
+            funds.map((f) => (f._id === fund._id ? res.data.fund : f))
+          );
+          toast.success(
+            action === "pause" ? "Campaign paused." : "Campaign resumed."
+          );
+        }
+      } catch (error) {
+        console.log(`Error trying to ${action} campaign:`, error);
+        toast.error(`Failed to ${action} campaign.`);
+      } finally {
+        setLoadingFundStatus((prev) => prev.filter((id) => id !== fund._id));
+      }
+    };
+    run();
+  };
+
   return (
     <>
       <Navbar />
@@ -384,6 +425,52 @@ const Dashboard = () => {
             ))}
             {pendingDonations.length === 0 && (
               <p className="empty">No pending donations</p>
+            )}
+          </div>
+        </section>
+
+        <section className="admin-section">
+          <h2>Live &amp; Paused Campaigns ({managedFunds.length})</h2>
+          <div className="admin-list">
+            {managedFunds.map((f) => (
+              <div key={f._id} className="admin-card">
+                <div className="admin-card-details">
+                  <p className="card-title">{f.fundraiseTitle}</p>
+                  <p className="card-sub">By {f.userId?.fullName}</p>
+                  <p className="card-sub">
+                    <strong>Status:</strong> {f.status} &nbsp;|&nbsp;
+                    <strong> Raised:</strong> PKR{" "}
+                    {(f.donationAmount || 0).toLocaleString()} of{" "}
+                    {(f.totalAmountRaised || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="card-actions">
+                  {f.status === "active" ? (
+                    <button
+                      className="btn reject"
+                      onClick={() => updateFundStatus(f, "pause")}
+                      disabled={loadingFundStatus.includes(f._id)}
+                    >
+                      {loadingFundStatus.includes(f._id)
+                        ? "Pausing..."
+                        : "Pause"}
+                    </button>
+                  ) : (
+                    <button
+                      className="btn approve"
+                      onClick={() => updateFundStatus(f, "resume")}
+                      disabled={loadingFundStatus.includes(f._id)}
+                    >
+                      {loadingFundStatus.includes(f._id)
+                        ? "Resuming..."
+                        : "Resume"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {managedFunds.length === 0 && (
+              <p className="empty">No live or paused campaigns</p>
             )}
           </div>
         </section>

@@ -1,7 +1,6 @@
-import '../css/Contact.css';
+ import '../css/Contact.css';
 import { FiPhone, FiMail, FiMapPin, FiHome, FiMap } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-
 const Contact = () => {
   return (
     <section className="contact-section">
@@ -11,7 +10,6 @@ const Contact = () => {
         <p className="contact-text">
           We'd love to hear from you! Reach out via phone, email, WhatsApp, or visit us at our office. Our team provides support in Urdu and English.
         </p>
-
         <div className="contact-info">
           <div className="info-card">
             <FiPhone className="info-icon" />
@@ -20,7 +18,6 @@ const Contact = () => {
               <p>+92 321 4012041</p>
             </div>
           </div>
-
           <div className="info-card">
             <FiMail className="info-icon" />
             <div>
@@ -28,7 +25,6 @@ const Contact = () => {
               <p>contactzaroorat@gmail.com</p>
             </div>
           </div>
-
           <div className="info-card">
             <FiMapPin className="info-icon" />
             <div>
@@ -36,7 +32,6 @@ const Contact = () => {
               <p>48 FF, Phase 4, DHA, Lahore</p>
             </div>
           </div>
-
           <div className="info-card">
             <FiMap className="info-icon" />
             <div>
@@ -56,5 +51,4 @@ const Contact = () => {
     </section>
   );
 };
-
 export default Contact;

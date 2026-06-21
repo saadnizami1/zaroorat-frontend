@@ -58,13 +58,30 @@ const MyFunds = () => {
       });
 
       if (res.data) {
-        console.log(res.data);
         setFunds((prev) => prev.filter((f) => f._id != fundId));
       }
     } catch (error) {
       console.log("Cannot delete due to error : ", error);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const closeFund = async (fundId) => {
+    try {
+      const res = await axios.put(
+        `${apiURL}/api/fund/fund-list/${fundId}/close`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (res.data?.fund) {
+        setFunds((prev) =>
+          prev.map((f) => (f._id === fundId ? res.data.fund : f))
+        );
+      }
+    } catch (error) {
+      console.log("Cannot close due to error : ", error);
     }
   };
 
@@ -102,6 +119,26 @@ const MyFunds = () => {
                       />
                       <div className="card-title">{f.fundraiseTitle}</div>
                     </Link>
+
+                    <div className="card-meta">
+                      <span className={`status-badge status-${f.status || "pending"}`}>
+                        {f.status || "pending"}
+                      </span>
+                      {f.status !== "closed" && (
+                        <button
+                          type="button"
+                          className="close-fund-btn"
+                          onClick={() => {
+                            const ok = window.confirm(
+                              `Close the fundraiser "${f.fundraiseTitle}"? It will stop accepting donations and be removed from public listings.`
+                            );
+                            if (ok) closeFund(f._id);
+                          }}
+                        >
+                          Close
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

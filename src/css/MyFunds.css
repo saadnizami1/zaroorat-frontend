@@ -27,6 +27,54 @@
   color: var(--color-text-light);
 }
 
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0.25rem;
+}
+
+.status-badge {
+  text-transform: capitalize;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #94a3b8;
+}
+
+.status-badge.status-active {
+  background: #1faf5b;
+}
+.status-badge.status-pending {
+  background: #d97706;
+}
+.status-badge.status-paused {
+  background: #64748b;
+}
+.status-badge.status-closed {
+  background: #b91c1c;
+}
+
+.close-fund-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--color-primary, #1faf5b);
+  background: transparent;
+  color: var(--color-primary, #1faf5b);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.close-fund-btn:hover {
+  background: var(--color-primary, #1faf5b);
+  color: #fff;
+}
+
 @media (max-width: 768px) {
   .fundraiser-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
