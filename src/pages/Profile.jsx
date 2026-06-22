@@ -1,10 +1,14 @@
 import { useContext, useEffect, useState } from "react";
-import { FiHome } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
-import { CampaignContext } from "../store/campaignStore";
+import { useNavigate } from "react-router-dom";
+import { FiEdit2, FiCheck, FiCreditCard, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import axios from "axios";
+import toast from "react-hot-toast";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import PhoneInput from "../components/PhoneInput";
+import { CampaignContext } from "../store/campaignStore";
+import { toLocalPkPhone, fullPkPhone, isValidPkMobile } from "../utils/pakistan";
 import "../css/Profile.css";
-import toast, { Toaster } from "react-hot-toast";
 
 const Profile = () => {
   const defaultProfile = "/UserProfile.jpg";
@@ -12,46 +16,31 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [editMode, setEditMode] = useState(false);
-  const [updatedUser, setUpdatedUser] = useState({
-    fullName: "",
-    phone: "",
-    cityName:"",
-    cnicImage:"",
-  });
+  const [updatedUser, setUpdatedUser] = useState({ fullName: "", phone: "", cityName: "" });
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(defaultProfile);
   const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState(null);
 
-  // Fetch user profile on mount
   useEffect(() => {
     if (!user) return navigate("/signin");
     (async () => {
       try {
-        const res = await axios.get(`${apiURL}/api/user/profile`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(`${apiURL}/api/user/profile`, { withCredentials: true });
         const u = res.data.user;
         setUser(u);
         localStorage.setItem("user", JSON.stringify(u));
         setUpdatedUser({
           fullName: u.fullName || "",
-          phone: u.phone || "",
-          cityName: u.cityName || ""
+          phone: toLocalPkPhone(u.phone || ""),
+          cityName: u.cityName || "",
         });
-        console.log("Fetched User:", res.data.user);
-
         setPreviewImage(u.profilePhoto || defaultProfile);
       } catch (err) {
         console.error("Error fetching profile:", err);
       }
     })();
-  }, [apiURL, setUser]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedUser((prev) => ({ ...prev, [name]: value }));
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiURL]);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -61,35 +50,28 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    if (updatedUser.phone && !isValidPkMobile(updatedUser.phone)) {
+      return toast.error("Enter a valid Pakistani mobile number.");
+    }
     try {
       const formData = new FormData();
       formData.append("fullName", updatedUser.fullName);
-      formData.append("phone", updatedUser.phone);
+      formData.append("phone", updatedUser.phone ? fullPkPhone(updatedUser.phone) : "");
       formData.append("cityName", updatedUser.cityName);
-      if (selectedFile) {
-        formData.append("cnicImage", selectedFile);
-      }
+      if (selectedFile) formData.append("cnicImage", selectedFile);
 
       setIsSending(true);
-
-      const res = await axios.put(
-        `${apiURL}/api/user/update-profile`,
-        formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
+      const res = await axios.put(`${apiURL}/api/user/update-profile`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       if (res.data.user) {
         setEditMode(false);
         setUser(res.data.user);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         toast.success("Profile updated successfully!");
-        navigate("/profile");
       }
     } catch (err) {
-      console.error("Error updating profile:", err);
       toast.error("Failed to update profile.");
     } finally {
       setIsSending(false);
@@ -97,147 +79,110 @@ const Profile = () => {
   };
 
   const handleDeactivateAccount = async () => {
+    if (!window.confirm("Request account deactivation? An admin will review your request.")) return;
     try {
-      const res = await axios.post(
-        `${apiURL}/api/user/account-deletion/request`,
-        {},
-        { withCredentials: true }
-      );
-
-      if (res.data) {
-        setError(null);
-        toast.success("Deactivation request sent successfully.");
-      }
+      await axios.post(`${apiURL}/api/user/account-deletion/request`, {}, { withCredentials: true });
+      toast.success("Deactivation request sent successfully.");
     } catch (error) {
-      const errMsg =
-        error.response?.data?.message ||
-        error.response?.data?.msg ||
-        error.message;
-      console.log("Some error occurred:", err);
-      setError(errMsg);
-      toast.error(errMsg);
+      toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
     }
   };
 
-  if (!user) return <div className="profile-container">Loading...</div>;
+  if (!user) return null;
 
   return (
-    <div className="profile-container">
-      <Toaster />
-      <div className="profile-card">
-        <Link to="/" className="home-icon">
-          <FiHome />
-        </Link>
-
-        <div className="profile-image">
-          <img src={previewImage} alt="Profile" />
-        </div>
-
-        {/* {editMode && (
-          <div className="file-input-wrapper">
-            <label htmlFor="profile-photo" className="file-input-label">
-              Choose Profile Picture
-            </label>
-            <input
-              
-              id="profile-photo"
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="file-input"
-            />
-          </div>
-        )} */}
-
-        <h2>{user.fullName}</h2>
-
-        <div className="profile-fields">
-          <div className="profile-field">
-            <label>Full Name</label>
-            {editMode ? (
-              <input
-                name="fullName"
-                value={updatedUser.fullName}
-                onChange={handleChange}
-              />
-            ) : (
-              <p>{user.fullName}</p>
-            )}
-          </div>
-
-          <div className="profile-field">
-            <label>Phone</label>
-            {editMode ? (
-              <input
-                name="phone"
-                value={updatedUser.phone}
-                onChange={handleChange}
-              />
-            ) : (
-              <p>{user.phone || "N/A"}</p>
-            )}
-          </div>
-          <div className="profile-field">
-            <label>City</label>
-            {editMode ? (
-              <input
-                name="cityName"
-                value={updatedUser.cityName}
-                onChange={handleChange}
-              />
-            ) : (
-              <p>{user.cityName || "N/A"}</p>
-            )}
-          </div>
-          {editMode ? (
-            <div className="profile-field">
-              <label htmlFor="cnicImage" className="cnic">
-                Choose CNIC Image
-              </label>
-              <input
-                id="cnicImage"
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className="profile-field"
-              />
+    <div className="page">
+      <Navbar />
+      <main className="profile-page">
+        <div className="container profile-grid">
+          {/* Identity card */}
+          <aside className="profile-identity">
+            <div className="profile-cover" />
+            <div className="profile-avatar">
+              <img src={previewImage} alt={user.fullName} />
             </div>
-          ) : (
-            <div className="profile-field">
-              <label>CNIC</label>
-              <p>{user.cnicImage ? "Updated" : "Missing"}</p>
+            <h1 className="profile-name">{user.fullName}</h1>
+            <span className={`badge ${user.role === "admin" ? "badge-gold" : "badge-green"}`}>
+              {user.role === "admin" ? "Administrator" : "Verified Member"}
+            </span>
+            <div className="profile-meta">
+              <div><FiMail /> {user.email}</div>
+              <div><FiCreditCard /> CNIC: {user.cnicImage ? "On file" : "Not provided"}</div>
             </div>
-          )}
+          </aside>
 
-          {!editMode && (
-            <div className="profile-field">
-              <label>Email</label>
-              <p>{user.email}</p>
+          {/* Details */}
+          <section className="profile-details">
+            <div className="profile-details-head">
+              <h2>Account details</h2>
+              {editMode ? (
+                <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={isSending}>
+                  {isSending ? "Saving…" : <><FiCheck /> Save changes</>}
+                </button>
+              ) : (
+                <button className="btn btn-ghost btn-sm" onClick={() => setEditMode(true)}>
+                  <FiEdit2 /> Edit
+                </button>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="profile-actions">
-          {editMode ? (
-            <button
-              className="btn save"
-              onClick={handleSave}
-              disabled={isSending}
-            >
-              {isSending ? <>Updating...</> : <>Save Changes</>}
-            </button>
-          ) : (
-            <button className="btn edit" onClick={() => setEditMode(true)}>
-              Edit Info
-            </button>
-          )}
-        </div>
+            <div className="profile-fields">
+              <div className="profile-field">
+                <span className="pf-label">Full name</span>
+                {editMode ? (
+                  <input className="input" value={updatedUser.fullName} onChange={(e) => setUpdatedUser((p) => ({ ...p, fullName: e.target.value }))} />
+                ) : (
+                  <p className="pf-value">{user.fullName}</p>
+                )}
+              </div>
 
-        <button className="btn danger" onClick={handleDeactivateAccount}>
-          Deactivate Account
-        </button>
-        {error && <div className="error-message">{error}</div>}
-      </div>
+              <div className="profile-field">
+                <span className="pf-label"><FiPhone /> Mobile number</span>
+                {editMode ? (
+                  <PhoneInput
+                    value={updatedUser.phone}
+                    onChange={(v) => setUpdatedUser((p) => ({ ...p, phone: v }))}
+                    invalid={updatedUser.phone.length > 0 && !isValidPkMobile(updatedUser.phone)}
+                  />
+                ) : (
+                  <p className="pf-value">{user.phone || "Not provided"}</p>
+                )}
+              </div>
+
+              <div className="profile-field">
+                <span className="pf-label"><FiMapPin /> City</span>
+                {editMode ? (
+                  <input className="input" value={updatedUser.cityName} onChange={(e) => setUpdatedUser((p) => ({ ...p, cityName: e.target.value }))} placeholder="e.g. Lahore" />
+                ) : (
+                  <p className="pf-value">{user.cityName || "Not provided"}</p>
+                )}
+              </div>
+
+              {editMode && (
+                <div className="profile-field">
+                  <span className="pf-label">CNIC image</span>
+                  <label className="upload-zone">
+                    <FiCreditCard />
+                    <span>{selectedFile?.name || "Upload your CNIC image"}</span>
+                    <input type="file" accept="image/*" onChange={handlePhotoChange} />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <div className="profile-danger">
+              <div>
+                <strong>Deactivate account</strong>
+                <p>Submit a request to deactivate your Zaroorat account.</p>
+              </div>
+              <button className="btn btn-ghost danger-btn" onClick={handleDeactivateAccount}>
+                Deactivate
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

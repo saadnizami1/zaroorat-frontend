@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import { CampaignContext } from "../store/campaignStore";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
   const [loadingApproveCampaigns, setLoadingApproveCampaigns] = useState([]);
@@ -118,17 +118,16 @@ const Dashboard = () => {
         );
 
         if (res.data) {
-          // console.log(res.data);
           setPendingCampaigns((cs) => cs.filter((c) => c._id !== acc._id));
           toast.success("Campaign approved!");
-          // console.log('Approved campaign', acc._id);
         }
+      } catch (error) {
+        console.log("Error approving campaign:", error);
+        toast.error("Failed to approve campaign.");
+      } finally {
         setLoadingApproveCampaigns((prev) =>
           prev.filter((id) => id !== acc._id)
         );
-      } catch (error) {
-        console.log("Error occured while fetching pending reuests : ", error);
-        toast.error("Failed to approve campaign.");
       }
     };
 
@@ -144,17 +143,16 @@ const Dashboard = () => {
         );
 
         if (res.data) {
-          // console.log(res.data);
           setPendingCampaigns((cs) => cs.filter((c) => c._id !== acc._id));
           toast.success("Campaign rejected.");
-          // console.log('Rejected campaign', acc._id);
         }
+      } catch (error) {
+        console.log("Error rejecting campaign:", error);
+        toast.error("Failed to reject campaign.");
+      } finally {
         setLoadingRejectCampaigns((prev) =>
           prev.filter((id) => id !== acc._id)
         );
-      } catch (error) {
-        console.log("Error occured while fetching pending reuests : ", error);
-        toast.error("Failed to reject campaign.");
       }
     };
 
@@ -173,16 +171,16 @@ const Dashboard = () => {
         );
 
         if (res.data) {
-          // console.log(res.data);
           setPendingDeactivations((ds) => ds.filter((d) => d._id !== acc._id));
           toast.success("Account deactivation approved!");
         }
+      } catch (error) {
+        console.log("Error approving deactivation:", error);
+        toast.error("Failed to approve deactivation.");
+      } finally {
         setLoadingApproveDeactivations((prev) =>
           prev.filter((id) => id !== acc._id)
         );
-      } catch (error) {
-        console.log("Error occured while fetching pending reuests : ", error);
-        toast.error("Failed to approve deactivation.");
       }
     };
 
@@ -200,16 +198,16 @@ const Dashboard = () => {
         );
 
         if (res.data) {
-          // console.log(res.data);
           setPendingDeactivations((ds) => ds.filter((d) => d._id !== acc._id));
           toast.success("Account deactivation rejected.");
         }
+      } catch (error) {
+        console.log("Error rejecting deactivation:", error);
+        toast.error("Failed to reject deactivation.");
+      } finally {
         setLoadingRejectDeactivations((prev) =>
           prev.filter((id) => id !== acc._id)
         );
-      } catch (error) {
-        console.log("Error occured while fetching pending reuests : ", error);
-        toast.error("Failed to reject deactivation.");
       }
     };
 
@@ -309,11 +307,14 @@ const Dashboard = () => {
   };
 
   return (
-    <>
+    <div className="page">
       <Navbar />
-      <Toaster />
       <div className="admin-page">
-        <h1>Admin Dashboard</h1>
+        <div className="admin-head">
+          <span className="eyebrow">Control center</span>
+          <h1>Admin Dashboard</h1>
+          <p>Review campaigns, verify donations, and manage the Zaroorat platform.</p>
+        </div>
 
         <section className="admin-section">
           <h2>Pending Campaign Approvals</h2>
@@ -514,7 +515,7 @@ const Dashboard = () => {
         </section>
       </div>
       <Footer></Footer>
-    </>
+    </div>
   );
 };
 

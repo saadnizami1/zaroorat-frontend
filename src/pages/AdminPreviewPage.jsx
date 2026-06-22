@@ -1,19 +1,19 @@
-// src/pages/AdminCampaignPreview.jsx
 import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FiCheck, FiX, FiArrowLeft } from "react-icons/fi";
 import axios from "axios";
+import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import "../css/Donate.css";
-import "../css/Dashboard.css"; // if you have admin styles
 import { CampaignContext } from "../store/campaignStore";
+import { formatPKR, progressPercent } from "../utils/format";
+import { formatCategory } from "../utils/categories";
+import "../css/Dashboard.css";
 
 const AdminCampaignPreview = () => {
   const { apiURL, user } = useContext(CampaignContext);
   const { state } = useLocation();
   const navigate = useNavigate();
-
-  // grab the passed campaign, or bail if missing
   const campaign = state?.campaign;
   const [processing, setProcessing] = useState(false);
 
@@ -22,148 +22,108 @@ const AdminCampaignPreview = () => {
     return null;
   }
   if (!campaign) {
-    return <p className="loading-screen">No campaign data passed.</p>;
+    return (
+      <div className="page">
+        <Navbar />
+        <div className="loading-screen">No campaign data passed. Open a campaign from the dashboard.</div>
+        <Footer />
+      </div>
+    );
   }
 
-  // destructure campaign fields
   const {
-    _id: id,
-    fundraiseTitle,
-    userId,
-    coverImage,
-    fundraiseStory,
-    donationAmount,
-    totalAmountRaised,
-    accountHolderName,
-    accountNumber,
-    bankName,
-    ifscCode,
+    _id: id, fundraiseTitle, userId, coverImage, fundraiseStory, fundCategory,
+    donationAmount = 0, totalAmountRaised = 0, accountHolderName, accountNumber, bankName, ifscCode,
+    cityName, country,
   } = campaign;
-
-  // User personal details from userId
-  const { fullName, email, phone, cityName, cnicImage } = userId || {};
-
-  const percent = Math.min((donationAmount / totalAmountRaised) * 100, 100);
+  const { fullName, email, phone, cityName: userCity, cnicImage } = userId || {};
+  const pct = progressPercent(donationAmount, totalAmountRaised);
 
   const handleDecision = async (approve) => {
     setProcessing(true);
     try {
       if (approve) {
-        await axios.put(
-          `${apiURL}/api/admin/fund-raise/approve-fund/${id}`,
-          {},
-          { withCredentials: true }
-        );
+        await axios.put(`${apiURL}/api/admin/fund-raise/approve-fund/${id}`, {}, { withCredentials: true });
+        toast.success("Campaign approved!");
       } else {
-        await axios.delete(`${apiURL}/api/admin/fund-raise/reject-fund/${id}`, {
-          withCredentials: true,
-        });
+        await axios.delete(`${apiURL}/api/admin/fund-raise/reject-fund/${id}`, { withCredentials: true });
+        toast.success("Campaign rejected.");
       }
-      navigate("/admin-dashboard");
+      setTimeout(() => navigate("/admin-dashboard"), 800);
     } catch (err) {
-      console.error(err);
+      toast.error("Action failed.");
       setProcessing(false);
     }
   };
 
   return (
-    <>
+    <div className="page">
       <Navbar />
-      <div className="donate-page">
-        {/* Left column: Campaign content */}
-        <div className="donate-left">
-          <img src={cnicImage} alt="CNIC" className="cnic-icon" />
-          <img src={coverImage} alt="Campaign cover" className="donate-cover" />
+      <main className="preview-page">
+        <div className="container">
+          <button className="auth-back" onClick={() => navigate("/admin-dashboard")} style={{ position: "static", marginBottom: "1.5rem" }}>
+            <FiArrowLeft /> Back to dashboard
+          </button>
 
-          <h1 className="donate-title">{fundraiseTitle}</h1>
-          <p className="donate-story">{fundraiseStory}</p>
-        </div>
-
-        {/* Right column: Progress, details, actions */}
-        <div className="donate-right">
-          {/* Progress bar */}
-          <div className="progress-info">
-            <span>PKR {donationAmount.toLocaleString()}</span>
-            <span>raised of PKR {totalAmountRaised.toLocaleString()}</span>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${percent}%` }} />
-          </div>
-
-          {/* Fundraiser personal details */}
-          <section
-            className="fundraiser-details"
-            style={{ marginTop: "1.5rem" }}
-          >
-            <h2>Fundraiser Details</h2>
-            <p>
-              <strong>Name:</strong> {fullName}
-            </p>
-            <p>
-              <strong>Email:</strong> {email}
-            </p>
-            {phone && (
-              <p>
-                <strong>Phone:</strong> {phone}
-              </p>
-            )}
-            {cityName && (
-              <p>
-                <strong>City:</strong> {cityName}
-              </p>
-            )}
-          </section>
-
-          {/* Bank details */}
-          <section className="bank-details" style={{ marginTop: "1rem" }}>
-            <h2>Bank Details</h2>
-            <p>
-              <strong>Account Holder:</strong> {accountHolderName}
-            </p>
-            <p>
-              <strong>Account Number:</strong> {accountNumber}
-            </p>
-            <p>
-              <strong>Bank Name:</strong> {bankName}
-            </p>
-            <p>
-              <strong>IFSC Code:</strong> {ifscCode}
-            </p>
-          </section>
-
-          {/* Approve / Reject buttons */}
-          {processing ? (
-            <p
-              style={{
-                textAlign: "center",
-                fontSize: "1rem",
-                marginTop: "2rem",
-              }}
-            >
-              Processing...
-            </p>
-          ) : (
-            <div className="card-actions" style={{ marginTop: "2rem" }}>
-              <button
-                className="btn approve"
-                disabled={processing}
-                onClick={() => handleDecision(true)}
-              >
-                Approve
-              </button>
-              <button
-                className="btn reject"
-                disabled={processing}
-                onClick={() => handleDecision(false)}
-              >
-                Reject
-              </button>
+          <div className="preview-grid">
+            <div className="preview-main">
+              <div className="preview-cover">
+                <img src={coverImage} alt={fundraiseTitle} />
+                {fundCategory && <span className="donate-cat">{formatCategory(fundCategory)}</span>}
+              </div>
+              <h1 className="preview-title">{fundraiseTitle}</h1>
+              {(cityName || country) && (
+                <p className="preview-loc">{[cityName, country].filter(Boolean).join(", ")}</p>
+              )}
+              <p className="preview-story">{fundraiseStory}</p>
             </div>
-          )}
+
+            <aside className="preview-aside">
+              <div className="preview-card">
+                <div className="preview-raised">{formatPKR(donationAmount)}</div>
+                <div className="donate-of">goal {formatPKR(totalAmountRaised)}</div>
+                <div className="progress" style={{ margin: "0.8rem 0" }}>
+                  <div className="progress-fill" style={{ width: `${pct}%` }} />
+                </div>
+
+                <h3 className="preview-h3">Fundraiser</h3>
+                <ul className="preview-list">
+                  <li><span>Name</span><strong>{fullName}</strong></li>
+                  <li><span>Email</span><strong>{email}</strong></li>
+                  {phone && <li><span>Phone</span><strong>{phone}</strong></li>}
+                  {(userCity || cityName) && <li><span>City</span><strong>{userCity || cityName}</strong></li>}
+                </ul>
+
+                <h3 className="preview-h3">Payout details</h3>
+                <ul className="preview-list">
+                  <li><span>Holder</span><strong>{accountHolderName}</strong></li>
+                  <li><span>Account</span><strong>{accountNumber}</strong></li>
+                  <li><span>Bank</span><strong>{bankName}</strong></li>
+                  <li><span>IBAN</span><strong>{ifscCode}</strong></li>
+                </ul>
+
+                {cnicImage && (
+                  <>
+                    <h3 className="preview-h3">CNIC</h3>
+                    <img src={cnicImage} alt="CNIC" className="preview-cnic" />
+                  </>
+                )}
+
+                <div className="preview-actions">
+                  <button className="btn btn-primary" disabled={processing} onClick={() => handleDecision(true)}>
+                    <FiCheck /> Approve
+                  </button>
+                  <button className="btn btn-ghost danger-btn" disabled={processing} onClick={() => handleDecision(false)}>
+                    <FiX /> Reject
+                  </button>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
-      </div>
+      </main>
       <Footer />
-    </>
+    </div>
   );
 };
 

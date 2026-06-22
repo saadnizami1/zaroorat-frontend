@@ -1,60 +1,60 @@
-import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
-import '../css/Partners.css';
+import { Link } from "react-router-dom";
+import { FiInfo, FiArrowRight } from "react-icons/fi";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import PageHero from "../components/PageHero";
+import Reveal from "../components/Reveal";
+import "../css/Pages.css";
+
+const STEPS = [
+  { title: "Choose an amount", desc: "Open a campaign, tap Donate, and pick a preset or enter a custom amount in PKR." },
+  { title: "Transfer manually", desc: "We show you the verified Zaroorat bank account. Send the amount using your banking app, ATM, or online banking." },
+  { title: "Submit your proof", desc: "Enter your name, email and +92 mobile number, then upload a screenshot of your transaction slip." },
+  { title: "We verify & disburse", desc: "Our team manually verifies the payment, credits the campaign, and disburses funds to the campaign owner." },
+];
 
 const Partners = () => {
   return (
-    <>
+    <div className="page">
       <Navbar />
-      <section className="partners-section">
-        <div className="partners-content">
-          <h2 className="partners-title">How Payments Work on Zaroorat</h2>
-          <p className="partners-text">
-            Thank you for choosing to support a campaign on Zaroorat — Pakistan’s first crowdfunding platform!
-          </p>
-          <p className="partners-text">
-            To ensure a secure and transparent process, please follow the steps below when making a payment:
-          </p>
+      <PageHero
+        eyebrow="How it works"
+        title="Secure, transparent giving — step by step"
+        subtitle="Zaroorat runs on direct bank transfer with manual verification. Here's exactly what happens when you donate."
+      />
 
-          <h3 className="partners-subtitle">Step-by-Step Payment Instructions:</h3>
-          <ol className="partners-list">
-            <li>
-              <strong>Select an Amount:</strong> Choose a predefined option or enter a custom amount.
-            </li>
-            <li>
-              <strong>Transfer the Amount Manually:</strong> Our bank account details will be shown. Use your banking app, ATM, or online banking to transfer the amount.
-            </li>
-            <li>
-              <strong>Submit Payment Proof:</strong><br />
-              - Enter your email address and phone number.<br />
-              - Upload a screenshot or photo of your transaction slip.
-            </li>
-          </ol>
+      <section className="content">
+        <div className="container">
+          <div className="steps-flow">
+            {STEPS.map((s, i) => (
+              <Reveal className="step-row" key={s.title} delay={(i % 4) + 1}>
+                <span className="step-num">{i + 1}</span>
+                <div>
+                  <h3>{s.title}</h3>
+                  <p>{s.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
 
-          <h3 className="partners-subtitle"> Verification & Processing:</h3>
-          <p className="partners-text">
-            - We verify the payment manually.<br />
-            - Admin (Zaroorat team) is notified.<br />
-            - After confirmation, the funds are disbursed to the campaign owner.
-          </p>
+          <div className="fee-note">
+            <FiInfo />
+            <p>
+              <strong>Platform fee:</strong> Zaroorat applies a small platform fee on donations to keep the
+              service running, maintained, and secure. The rest goes directly to the campaign. We never take
+              your card details — payment is always a direct bank transfer you control.
+            </p>
+          </div>
 
-          <h3 className="partners-subtitle"> Platform Fee</h3>
-          <p className="partners-text">
-            Zaroorat charges a 5% platform fee on each donation. This helps us improve and maintain the platform.
-          </p>
-
-          <p className="partners-text">
-            If you have any questions or face any issues during the payment process, feel free to contact us anytime.
-          </p>
-
-          <p className="partners-thankyou">
-            Thank you for being a part of the change.<br />
-            <strong>Zaroorat – Helping Pakistan, One Campaign at a Time. </strong>
-          </p>
+          <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+            <Link to="/fundraisers" className="btn btn-primary btn-lg">
+              Browse campaigns <FiArrowRight />
+            </Link>
+          </div>
         </div>
       </section>
       <Footer />
-    </>
+    </div>
   );
 };
 

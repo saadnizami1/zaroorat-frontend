@@ -1,42 +1,50 @@
-import { Link } from 'react-router-dom';
-import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
-import '../css/Mission.css';
+import { Link } from "react-router-dom";
+import { FiUsers, FiEye, FiShield, FiHeart } from "react-icons/fi";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import PageHero from "../components/PageHero";
+import Reveal from "../components/Reveal";
+import "../css/Pages.css";
+
+const VALUES = [
+  { icon: <FiHeart />, title: "Empowerment", desc: "Enable Pakistani fundraisers to share their stories and reach supporters across every province and the diaspora." },
+  { icon: <FiEye />, title: "Transparency", desc: "Clear progress tracking and regular updates, so donors always know how their contributions create change." },
+  { icon: <FiShield />, title: "Trust", desc: "Every rupee reaches its intended purpose through rigorous verification and secure, manual review." },
+  { icon: <FiUsers />, title: "Community", desc: "A caring network reflecting Pakistani values — where neighbours help neighbours and communities uplift one another." },
+];
 
 const Mission = () => {
-  return (<>
-    <Navbar></Navbar>
-    <section className="mission-section">
-      <div className="mission-content">
-        <h2 className="mission-title">Our Mission</h2>
-        <p className="mission-text">
-          At <span className="highlight">Zaroorat</span>, we believe in the Pakistani spirit 
-          of helping those in need. Our mission is to connect compassionate donors across 
-          Pakistan with causes that matter, making every contribution transparent, meaningful, 
-          and impactful for our communities.
-        </p>
-        <ul className="mission-list">
-          <li>
-            <strong>Empowerment:</strong> Enable Pakistani fundraisers to share their stories and reach supporters across all provinces and overseas Pakistani communities.
-          </li>
-          <li>
-            <strong>Transparency:</strong> Provide clear progress tracking and regular updates so donors know exactly how their contributions are making a difference.
-          </li>
-          <li>
-            <strong>Trust:</strong> Ensure every rupee reaches its intended purpose through rigorous campaign verification and secure payment systems.
-          </li>
-          <li>
-            <strong>Community:</strong> Build a caring network that reflects Pakistani values of mutual support, where neighbors help neighbors and communities uplift each other.
-          </li>
-        </ul>
-        <div className="mission-cta">
-          <Link to={'/campaign'}><button className="primary-button">Start Your Zaroorat</button></Link>
-          <Link to={'/fundraisers'}><button className="secondary-button">Explore Needs</button></Link>
+  return (
+    <div className="page">
+      <Navbar />
+      <PageHero
+        eyebrow="Our mission"
+        title="Built on the Pakistani spirit of helping one another"
+        subtitle="Zaroorat connects compassionate donors across Pakistan with the causes that matter — making every contribution transparent, meaningful, and impactful."
+      >
+        <Link to="/campaign" className="btn btn-primary">Start your Zaroorat</Link>
+      </PageHero>
+
+      <section className="content">
+        <div className="container">
+          <Reveal className="section-head center">
+            <span className="eyebrow center">What we stand for</span>
+            <h2 className="section-title">The values that guide every campaign</h2>
+          </Reveal>
+          <div className="value-grid">
+            {VALUES.map((v, i) => (
+              <Reveal className="value-card" key={v.title} delay={(i % 4) + 1}>
+                <div className="value-icon">{v.icon}</div>
+                <h3>{v.title}</h3>
+                <p>{v.desc}</p>
+              </Reveal>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
-    <Footer></Footer>
-  </>);
-}
+      </section>
+      <Footer />
+    </div>
+  );
+};
 
 export default Mission;

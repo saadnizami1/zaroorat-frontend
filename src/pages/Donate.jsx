@@ -1,31 +1,43 @@
-import { useContext, useEffect, useState } from 'react';
-import '../css/Donate.css';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import DonateModal from '../components/DonationPayment';
-import axios from 'axios';
-import { CampaignContext } from '../store/campaignStore';
-import { useParams, useNavigate } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
+import { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  FiMapPin,
+  FiShare2,
+  FiHeart,
+  FiShield,
+  FiClock,
+  FiUsers,
+  FiCheckCircle,
+  FiFileText,
+} from "react-icons/fi";
+import axios from "axios";
+import toast from "react-hot-toast";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import DonateModal from "../components/DonationPayment";
+import { CampaignContext } from "../store/campaignStore";
+import { formatPKR, progressPercent } from "../utils/format";
+import { formatCategory } from "../utils/categories";
+import "../css/Donate.css";
 
 const Donate = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [fund, setFund] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [supporters, setSupporters] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAuthor, setIsAuthor] = useState(false);
 
   const [showReportForm, setShowReportForm] = useState(false);
-  const [showReports, setShowReports] = useState(false);
-  const [reports, setReports] = useState([]);
-  const [newReportDesc, setNewReportDesc] = useState('');
+  const [newReportDesc, setNewReportDesc] = useState("");
   const [newReportImage, setNewReportImage] = useState(null);
 
-  const shareUrl = window.location.href;
+  const { id: fundId } = useParams();
   const { apiURL, user } = useContext(CampaignContext);
-  const params = useParams();
-  const fundId = new window.URLSearchParams(params).get('id');
   const navigate = useNavigate();
+  const shareUrl = window.location.href;
+
   useEffect(() => {
     (async () => {
       setIsLoading(true);
@@ -35,38 +47,43 @@ const Donate = () => {
           const ownerId = res.data.fund?.userId?._id;
           if (user?._id && ownerId && user._id === ownerId) setIsAuthor(true);
           setFund(res.data.fund);
-          setReports(res.data.reports);
+          setReports(res.data.reports || []);
         }
       } catch (error) {
         toast.error("Failed to load campaign details");
-        console.log("Error:", error);
       } finally {
         setIsLoading(false);
       }
     })();
   }, [apiURL, fundId, user]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get(`${apiURL}/api/fund/donar-by-fundId/${fundId}`);
+        setSupporters(res.data?.donars || res.data?.donations || res.data?.supporters || []);
+      } catch {
+        /* supporters are optional */
+      }
+    })();
+  }, [apiURL, fundId]);
+
   const handleDonate = async (paymentData) => {
     try {
       setIsProcessing(true);
-      const res = await axios.post(
-        `${apiURL}/api/donar/donate`,
-        paymentData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
+      const res = await axios.post(`${apiURL}/api/donar/donate`, paymentData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       if (res) {
-        // ✅ UPDATED MESSAGE AND DURATION
-        toast.success("Thank you for your donation! Your contribution will be reflected after our team verifies the payment.", {
-          duration: 5000, // Show for 5 seconds
-        });
+        toast.success(
+          "Thank you for your donation! Your contribution will be reflected once our team verifies the payment.",
+          { duration: 5000 }
+        );
         setModalOpen(false);
-        setTimeout(() => {
-          navigate('/')
-        }, 5000); // ✅ CHANGED from 3000 to 5000
+        setTimeout(() => navigate("/"), 4000);
       }
     } catch (error) {
-      console.log('Error:', error);
-      toast.error("Donation failed.");
+      toast.error("Donation failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -74,16 +91,15 @@ const Donate = () => {
 
   const handleShare = async () => {
     const shareData = {
-      title: fund.fundraiseTitle,
-      text: `Support "${fund.fundraiseTitle}" on FundRaiseTogether!`,
+      title: fund?.fundraiseTitle,
+      text: `Support "${fund?.fundraiseTitle}" on Zaroorat — Pakistan's trusted crowdfunding platform.`,
       url: shareUrl,
     };
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-        toast.success("Shared successfully!");
       } catch {
-        toast.error("Failed to share.");
+        /* user cancelled */
       }
       return;
     }
@@ -95,122 +111,197 @@ const Donate = () => {
     }
   };
 
-  const toggleReportForm = () => setShowReportForm(prev => !prev);
-  const toggleShowReports = () => setShowReports(prev => !prev);
-
   const handleReportSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
-    formData.append('fundId', fundId);
-    formData.append('description', newReportDesc);
-    formData.append('image', newReportImage);
-
+    formData.append("fundId", fundId);
+    formData.append("description", newReportDesc);
+    formData.append("image", newReportImage);
     setIsProcessing(true);
     try {
       const res = await axios.post(`${apiURL}/api/fund/fund-report`, formData, {
         withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
       if (res.data) {
-        toast.success("Report submitted!");
+        toast.success("Update posted!");
         window.location.reload();
       }
     } catch (error) {
-      console.error("Report Error:", error);
-      toast.error("Failed to submit report.");
+      toast.error("Failed to post update.");
     } finally {
       setIsProcessing(false);
-      setNewReportDesc('');
+      setNewReportDesc("");
       setNewReportImage(null);
       setShowReportForm(false);
-      setShowReports(false);
     }
   };
 
-  const percent = Math.min((fund?.donationAmount / fund?.totalAmountRaised) * 100, 100);
+  const raised = fund?.donationAmount || 0;
+  const goal = fund?.totalAmountRaised || 0;
+  const pct = progressPercent(raised, goal);
+  const organizer = fund?.userId;
+
+  if (isLoading) {
+    return (
+      <div className="page">
+        <Navbar />
+        <div className="loading-screen"><div className="spinner" /></div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className="page">
       <Navbar />
-      <Toaster position="top-center" />
-      {isLoading ? (
-        <p className="loading-screen">Loading...</p>
-      ) : (
-        <div className="donate-page">
-          <div className="donate-left">
-            <img src={fund?.coverImage} alt="Campaign cover" className="donate-cover" />
-            <h1 className="donate-title">{fund?.fundraiseTitle}</h1>
-            <p className="donate-story">{fund?.fundraiseStory}</p>
+      <main className="donate">
+        <div className="container donate-grid">
+          {/* ---------- Main column ---------- */}
+          <article className="donate-main">
+            <div className="donate-cover-wrap">
+              <img src={fund?.coverImage} alt={fund?.fundraiseTitle} className="donate-cover" />
+              {fund?.fundCategory && (
+                <span className="donate-cat">{formatCategory(fund.fundCategory)}</span>
+              )}
+            </div>
 
+            <div className="donate-head">
+              {(fund?.cityName || fund?.country) && (
+                <span className="donate-loc">
+                  <FiMapPin /> {[fund?.cityName, fund?.country].filter(Boolean).join(", ")}
+                </span>
+              )}
+              <h1 className="donate-title">{fund?.fundraiseTitle}</h1>
+              {organizer?.fullName && (
+                <div className="donate-organizer">
+                  <span className="org-avatar">
+                    {organizer.profilePhoto ? (
+                      <img src={organizer.profilePhoto} alt={organizer.fullName} />
+                    ) : (
+                      organizer.fullName.charAt(0)
+                    )}
+                  </span>
+                  <span>
+                    Organised by <strong>{organizer.fullName}</strong>
+                    {organizer.cityName ? ` · ${organizer.cityName}` : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="donate-story">
+              <h2>About this fundraiser</h2>
+              <p>{fund?.fundraiseStory}</p>
+            </div>
+
+            {/* Author: post an update */}
             {isAuthor && (
-              <>
-                <button className="share-button" onClick={toggleReportForm}>
-                  {showReportForm ? 'Cancel Report' : 'Create Report'}
-                </button>
-
+              <div className="donate-author-box">
+                <div className="author-box-head">
+                  <h3><FiFileText /> Campaign owner tools</h3>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setShowReportForm((s) => !s)}>
+                    {showReportForm ? "Cancel" : "Post an update"}
+                  </button>
+                </div>
                 {showReportForm && (
                   <form className="report-form" onSubmit={handleReportSubmit}>
                     <textarea
+                      className="textarea"
                       required
-                      placeholder="Report description..."
+                      placeholder="Share progress with your donors…"
                       value={newReportDesc}
-                      onChange={e => setNewReportDesc(e.target.value)}
+                      onChange={(e) => setNewReportDesc(e.target.value)}
                     />
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={e => setNewReportImage(e.target.files[0])}
+                      className="file-pretty"
+                      onChange={(e) => setNewReportImage(e.target.files[0])}
                     />
-                    <button
-                      type="submit"
-                      className="submit-report-button"
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? 'Processing...' : 'Submit Report'}
+                    <button type="submit" className="btn btn-primary" disabled={isProcessing}>
+                      {isProcessing ? "Posting…" : "Publish update"}
                     </button>
                   </form>
                 )}
-              </>
-            )}
-          </div>
-
-          <div className="donate-right">
-            <div className="progress-info">
-              <span>PKR {fund?.donationAmount.toLocaleString()}</span>
-              <span>raised of PKR {fund?.totalAmountRaised.toLocaleString()}</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${percent}%` }} />
-            </div>
-            <button className="donate-button" onClick={() => setModalOpen(true)}>
-              Donate Now
-            </button>
-            <button className="share-button" onClick={handleShare}>
-              Share Now
-            </button>
-            <button className="report-button" onClick={toggleShowReports}>
-              {showReports ? 'Close Reports' : 'Show Reports'}
-            </button>
-
-            {showReports && (
-              <div className="reports-container">
-                {reports.length === 0 ? (
-                  <p>No reports yet.</p>
-                ) : (
-                  reports?.map((r, i) => (
-                    <div key={i} className="report-item">
-                      <p>{r.description}</p>
-                      {r.image && <img src={r.image} alt="Report" />}
-                    </div>
-                  ))
-                )}
               </div>
             )}
-          </div>
+
+            {/* Updates / reports */}
+            {reports.length > 0 && (
+              <div className="donate-updates">
+                <h2>Updates from the organizer</h2>
+                <div className="updates-list">
+                  {reports.map((r, i) => (
+                    <div key={i} className="update-item">
+                      <div className="update-dot" />
+                      <div className="update-body">
+                        <p>{r.description}</p>
+                        {r.image && <img src={r.image} alt="Update" loading="lazy" />}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Supporters */}
+            {supporters.length > 0 && (
+              <div className="donate-supporters">
+                <h2><FiUsers /> Recent supporters</h2>
+                <div className="supporters-list">
+                  {supporters.slice(0, 8).map((s, i) => (
+                    <div className="supporter-row" key={i}>
+                      <span className="supporter-avatar">{(s.fullName || "A").charAt(0)}</span>
+                      <span className="supporter-name">{s.fullName || "Anonymous"}</span>
+                      {s.amount != null && (
+                        <span className="supporter-amount">{formatPKR(s.amount)}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+
+          {/* ---------- Sticky donation aside ---------- */}
+          <aside className="donate-aside">
+            <div className="donate-card">
+              <div className="donate-raised">{formatPKR(raised)}</div>
+              <div className="donate-of">
+                raised of {formatPKR(goal)} goal
+              </div>
+              <div className="progress donate-bar">
+                <div className="progress-fill" style={{ width: `${pct}%` }} />
+              </div>
+              <div className="donate-stats">
+                <span><strong>{pct}%</strong> funded</span>
+                {typeof fund?.donationCount === "number" && (
+                  <span><strong>{fund.donationCount}</strong> donations</span>
+                )}
+              </div>
+
+              <button className="btn btn-primary btn-block btn-lg donate-primary" onClick={() => setModalOpen(true)}>
+                <FiHeart /> Donate Now
+              </button>
+              <button className="btn btn-ghost btn-block donate-share" onClick={handleShare}>
+                <FiShare2 /> Share this campaign
+              </button>
+
+              <div className="donate-assurance">
+                <FiShield /> Donations are verified by the Zaroorat team before they're counted.
+              </div>
+            </div>
+
+            <div className="donate-trust">
+              <div className="trust-row"><FiCheckCircle /> Reviewed & approved campaign</div>
+              <div className="trust-row"><FiClock /> Funds released after verification</div>
+              <div className="trust-row"><FiUsers /> Backed by {supporters.length || fund?.donationCount || 0}+ supporters</div>
+            </div>
+          </aside>
         </div>
-      )}
+      </main>
+
       <DonateModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
@@ -219,7 +310,7 @@ const Donate = () => {
         isProcessing={isProcessing}
       />
       <Footer />
-    </>
+    </div>
   );
 };
 

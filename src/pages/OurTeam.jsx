@@ -1,480 +1,172 @@
-import { useState } from "react";
-import Footer from "../components/Footer";
+import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { FaEnvelope, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { FiArrowUpRight, FiShield, FiHeart, FiZap } from "react-icons/fi";
 import Navbar from "../components/Navbar";
-import { FaEnvelope, FaInstagram, FaLinkedin, FaChevronDown, FaUsers, FaHeadset, FaBullhorn, FaLaptopCode } from "react-icons/fa";
+import Footer from "../components/Footer";
+import Reveal from "../components/Reveal";
+import Magnetic from "../components/Magnetic";
+import useInView from "../hooks/useInView";
+import "../css/OurTeam.css";
+
+const initials = (name) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+const DEPARTMENTS = [
+  { name: "Customer Support", head: "Ahmad Adnan", members: ["Usman Nizai", "Irtaza Khan", "Danyal Zaka"] },
+  { name: "Public Engagement", head: "Hassan Ali", members: ["Musa Raza", "Azan Khurram", "Danyyal Niazi"] },
+  { name: "Web Operations", head: "Saad Nizami", members: ["Salaar Farrukh", "Ibrahim Malik"] },
+];
+
+const VALUES = [
+  { icon: <FiShield />, title: "Verify everything", body: "No payment counts until a human on our team confirms the proof. Trust is earned line by line." },
+  { icon: <FiHeart />, title: "Dignity first", body: "Every campaigner is treated with respect — we tell real stories, never reduce people to a statistic." },
+  { icon: <FiZap />, title: "Move for people", body: "When a family is in crisis, speed matters. We build and respond with urgency, not bureaucracy." },
+];
 
 const OurTeam = () => {
-  const [expandedDepts, setExpandedDepts] = useState([]);
+  const aetherRef = useRef(null);
+  const [titleRef, titleIn] = useInView({ threshold: 0.3 });
 
-  const toggleDept = (dept) => {
-    if (expandedDepts.includes(dept)) {
-      setExpandedDepts(expandedDepts.filter(d => d !== dept));
-    } else {
-      setExpandedDepts([...expandedDepts, dept]);
-    }
-  };
+  useEffect(() => {
+    const el = aetherRef.current;
+    if (!el || window.matchMedia("(pointer: coarse)").matches) return;
+    let raf = 0;
+    const onMove = (e) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        el.style.setProperty("--px", (e.clientX / window.innerWidth - 0.5).toFixed(3));
+        el.style.setProperty("--py", (e.clientY / window.innerHeight - 0.5).toFixed(3));
+      });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
 
   return (
-    <>
-      <style>{`
-        .org-page {
-          background: #f5f5f5;
-          min-height: 100vh;
-          padding: 120px 20px 80px;
-        }
-
-        .org-container {
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-
-        .org-title {
-          text-align: center;
-          font-size: 32px;
-          font-weight: 700;
-          color: #2c3e50;
-          margin-bottom: 10px;
-          letter-spacing: 2px;
-        }
-
-        .org-subtitle {
-          text-align: center;
-          color: #7f8c8d;
-          font-size: 16px;
-          margin-bottom: 60px;
-        }
-
-        /* Founder Level */
-        .founder-level {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 40px;
-        }
-
-        .org-card {
-          background: white;
-          border-radius: 8px;
-          padding: 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          width: 280px;
-          border: 1px solid #e0e0e0;
-          transition: all 0.3s ease;
-        }
-
-        .org-card:hover {
-          box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-          transform: translateY(-4px);
-        }
-
-        .card-header {
-          background: linear-gradient(135deg, #1FAF5B 0%, #0d7d3a 100%);
-          padding: 30px 20px;
-          text-align: center;
-          border-radius: 8px 8px 0 0;
-        }
-
-        .avatar-circle {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          background: white;
-          margin: 0 auto 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 36px;
-          font-weight: 700;
-          color: #1FAF5B;
-          border: 4px solid rgba(255,255,255,0.3);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .card-header h3 {
-          color: white;
-          font-size: 20px;
-          margin: 0 0 5px 0;
-          font-weight: 600;
-        }
-
-        .card-header p {
-          color: rgba(255,255,255,0.9);
-          font-size: 14px;
-          margin: 0;
-        }
-
-        .card-body {
-          padding: 20px;
-          text-align: center;
-        }
-
-        .social-links {
-          display: flex;
-          justify-content: center;
-          gap: 12px;
-        }
-
-        .social-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 18px;
-          transition: all 0.3s ease;
-          text-decoration: none;
-        }
-
-        .social-icon.email { background: #EA4335; }
-        .social-icon.instagram { background: #E4405F; }
-        .social-icon.linkedin { background: #0077B5; }
-
-        .social-icon:hover {
-          transform: scale(1.15);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        /* Connector Lines */
-        .connector-v {
-          width: 2px;
-          height: 60px;
-          background: #bdc3c7;
-          margin: 0 auto;
-        }
-
-        .connector-h-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin: 0 auto;
-          max-width: 900px;
-        }
-
-        .connector-h {
-          height: 2px;
-          background: #bdc3c7;
-          flex: 1;
-        }
-
-        .connector-center {
-          width: 20px;
-          height: 20px;
-          border: 2px solid #bdc3c7;
-          border-radius: 50%;
-          background: white;
-        }
-
-        /* Department Level */
-        .dept-level {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 40px;
-          max-width: 1100px;
-          margin: 40px auto 0;
-          padding: 0 20px;
-        }
-
-        .dept-card {
-          background: white;
-          border-radius: 8px;
-          border: 1px solid #e0e0e0;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          transition: all 0.3s ease;
-        }
-
-        .dept-card:hover {
-          box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-        }
-
-        .dept-header {
-          padding: 25px 20px;
-          cursor: pointer;
-          position: relative;
-          transition: all 0.3s ease;
-          border-bottom: 1px solid #e0e0e0;
-        }
-
-        .dept-header.support { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
-        .dept-header.engage { background: linear-gradient(135deg, #1FAF5B 0%, #0d7d3a 100%); }
-        .dept-header.webops { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
-
-        .dept-icon {
-          font-size: 32px;
-          color: white;
-          margin-bottom: 12px;
-        }
-
-        .dept-header h4 {
-          color: white;
-          font-size: 18px;
-          margin: 0 0 6px 0;
-          font-weight: 600;
-        }
-
-        .dept-header p {
-          color: rgba(255,255,255,0.9);
-          font-size: 13px;
-          margin: 0;
-        }
-
-        .expand-btn {
-          position: absolute;
-          top: 50%;
-          right: 20px;
-          transform: translateY(-50%);
-          background: rgba(255,255,255,0.2);
-          border: none;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          color: white;
-        }
-
-        .expand-btn:hover {
-          background: rgba(255,255,255,0.3);
-        }
-
-        .expand-btn.rotated {
-          transform: translateY(-50%) rotate(180deg);
-        }
-
-        .members-list {
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.4s ease;
-        }
-
-        .members-list.open {
-          max-height: 400px;
-        }
-
-        .member-item {
-          padding: 16px 20px;
-          border-bottom: 1px solid #f0f0f0;
-          display: flex;
-          align-items: center;
-          transition: background 0.2s ease;
-        }
-
-        .member-item:last-child {
-          border-bottom: none;
-        }
-
-        .member-item:hover {
-          background: #f8f9fa;
-        }
-
-        .member-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: #ecf0f1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-right: 12px;
-          font-size: 14px;
-          font-weight: 600;
-          color: #7f8c8d;
-        }
-
-        .member-name {
-          font-size: 14px;
-          color: #2c3e50;
-          font-weight: 500;
-        }
-
-        /* Footer Text */
-        .org-footer {
-          text-align: center;
-          margin-top: 80px;
-          padding: 40px 20px;
-          background: white;
-          border-radius: 8px;
-          max-width: 800px;
-          margin-left: auto;
-          margin-right: auto;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .org-footer p {
-          font-size: 18px;
-          color: #34495e;
-          line-height: 1.8;
-          margin: 0;
-        }
-
-        .org-footer strong {
-          color: #1FAF5B;
-        }
-
-        @media (max-width: 768px) {
-          .dept-level {
-            grid-template-columns: 1fr;
-          }
-          
-          .org-title {
-            font-size: 24px;
-          }
-        }
-      `}</style>
-
+    <div className="page">
       <Navbar />
 
-      <div className="org-page">
-        <div className="org-container">
-          
-          <h1 className="org-title">ORGANIZATIONAL CHART</h1>
-          <p className="org-subtitle">Meet the team behind Zaroorat, Pakistan's first crowdfunding platform</p>
-
-          {/* Founder */}
-          <div className="founder-level">
-            <div className="org-card">
-              <div className="card-header">
-                <div className="avatar-circle">SN</div>
-                <h3>Saad Nizami</h3>
-                <p>Founder</p>
-              </div>
-              <div className="card-body">
-                <div className="social-links">
-                  <a href="mailto:saadnizami114@gmail.com" className="social-icon email" target="_blank" rel="noopener noreferrer">
-                    <FaEnvelope />
-                  </a>
-                  <a href="https://www.instagram.com/saadnizami__/" className="social-icon instagram" target="_blank" rel="noopener noreferrer">
-                    <FaInstagram />
-                  </a>
-                  <a href="https://www.linkedin.com/in/saad-nizami-250ab0374/" className="social-icon linkedin" target="_blank" rel="noopener noreferrer">
-                    <FaLinkedin />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Vertical Line */}
-          <div className="connector-v"></div>
-
-          {/* Horizontal Line */}
-          <div className="connector-h-container">
-            <div className="connector-h"></div>
-            <div className="connector-center"></div>
-            <div className="connector-h"></div>
-          </div>
-
-          {/* Vertical Lines to Departments */}
-          <div style={{ display: 'flex', justifyContent: 'space-around', maxWidth: '1100px', margin: '0 auto', padding: '0 20px' }}>
-            <div className="connector-v" style={{ height: '40px' }}></div>
-            <div className="connector-v" style={{ height: '40px' }}></div>
-            <div className="connector-v" style={{ height: '40px' }}></div>
-          </div>
-
-          {/* Departments */}
-          <div className="dept-level">
-            
-            {/* Customer Support */}
-            <div className="dept-card">
-              <div className="dept-header support">
-                <div className="dept-icon"><FaHeadset /></div>
-                <h4>Customer Support</h4>
-                <p>Head: Ahmad Adnan</p>
-                <button 
-                  className={`expand-btn ${expandedDepts.includes('support') ? 'rotated' : ''}`}
-                  onClick={() => toggleDept('support')}
-                >
-                  <FaChevronDown />
-                </button>
-              </div>
-              <div className={`members-list ${expandedDepts.includes('support') ? 'open' : ''}`}>
-                <div className="member-item">
-                  <div className="member-icon">UN</div>
-                  <div className="member-name">Usman Nizai</div>
-                </div>
-                <div className="member-item">
-                  <div className="member-icon">IK</div>
-                  <div className="member-name">Irtaza Khan</div>
-                </div>
-                <div className="member-item">
-                  <div className="member-icon">DZ</div>
-                  <div className="member-name">Danyal Zaka</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Public Engagement */}
-            <div className="dept-card">
-              <div className="dept-header engage">
-                <div className="dept-icon"><FaBullhorn /></div>
-                <h4>Public Engagement</h4>
-                <p>Head: Hassan Ali</p>
-                <button 
-                  className={`expand-btn ${expandedDepts.includes('engage') ? 'rotated' : ''}`}
-                  onClick={() => toggleDept('engage')}
-                >
-                  <FaChevronDown />
-                </button>
-              </div>
-              <div className={`members-list ${expandedDepts.includes('engage') ? 'open' : ''}`}>
-                <div className="member-item">
-                  <div className="member-icon">MR</div>
-                  <div className="member-name">Musa Raza</div>
-                </div>
-                <div className="member-item">
-                  <div className="member-icon">AK</div>
-                  <div className="member-name">Azan Khurram</div>
-                </div>
-                <div className="member-item">
-                  <div className="member-icon">DN</div>
-                  <div className="member-name">Danyyal Niazi</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Web Operations */}
-            <div className="dept-card">
-              <div className="dept-header webops">
-                <div className="dept-icon"><FaLaptopCode /></div>
-                <h4>Web Operations</h4>
-                <p>Head: Saad Nizami</p>
-                <button 
-                  className={`expand-btn ${expandedDepts.includes('webops') ? 'rotated' : ''}`}
-                  onClick={() => toggleDept('webops')}
-                >
-                  <FaChevronDown />
-                </button>
-              </div>
-              <div className={`members-list ${expandedDepts.includes('webops') ? 'open' : ''}`}>
-                <div className="member-item">
-                  <div className="member-icon">SF</div>
-                  <div className="member-name">Salaar Farrukh</div>
-                </div>
-                <div className="member-item">
-                  <div className="member-icon">IM</div>
-                  <div className="member-name">Ibrahim Malik</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Mission Statement */}
-          <div className="org-footer">
-            <p>
-              Together, we are building a platform that empowers Pakistan — <strong>one campaign at a time.</strong>
-            </p>
-          </div>
-
+      {/* ---------- Editorial hero ---------- */}
+      <section className="team-hero">
+        <div className="team-hero-aether" ref={aetherRef} aria-hidden="true">
+          <span className="bgword team-bgword">team</span>
         </div>
-      </div>
+        <div className="container team-hero-inner">
+          <span className="eyebrow">Our team · Pakistan</span>
+          <h1 ref={titleRef} className={`team-title word-reveal ${titleIn ? "in" : ""}`}>
+            {"The people behind every".split(" ").map((w, i) => (
+              <span key={i} className="w" style={{ transitionDelay: `${i * 0.06}s` }}>{w}{" "}</span>
+            ))}
+            <span className="w team-accent" style={{ transitionDelay: "0.3s" }}>verified rupee.</span>
+          </h1>
+          <p className="team-lead-text">
+            Zaroorat is built by a small, relentless Pakistani team who check every proof, answer every
+            message, and obsess over getting help to the right hands.
+          </p>
+          <div className="team-stats">
+            <div className="team-stat"><strong>15+</strong><span>People</span></div>
+            <div className="team-stat"><strong>3</strong><span>Departments</span></div>
+            <div className="team-stat"><strong>100%</strong><span>Pakistan-based</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Founder spread ---------- */}
+      <section className="section founder-section">
+        <div className="container founder-grid">
+          <Reveal className="founder-panel">
+            <span className="founder-monogram">SN</span>
+            <div className="founder-socials">
+              <a href="mailto:saadnizami114@gmail.com" aria-label="Email Saad"><FaEnvelope /></a>
+              <a href="https://www.instagram.com/saadnizami__/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
+              <a href="https://www.linkedin.com/in/saad-nizami-250ab0374/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><FaLinkedin /></a>
+            </div>
+          </Reveal>
+          <Reveal className="founder-body" delay={1}>
+            <span className="eyebrow">Founder &amp; CEO</span>
+            <h2 className="founder-name">Saad Nizami</h2>
+            <p className="founder-quote">
+              “I started Zaroorat because I watched good people give to causes that never reached anyone.
+              We built the opposite — a platform where every rupee is proven, every story is real, and
+              giving finally feels <em>certain</em>.”
+            </p>
+            <p className="founder-meta">Leading product, operations &amp; verification.</p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ---------- Department ledger ---------- */}
+      <section className="section ledger-section section-paper">
+        <div className="container">
+          <Reveal className="section-head">
+            <span className="eyebrow">Departments</span>
+            <h2 className="section-title">Working together for Pakistan</h2>
+          </Reveal>
+
+          <div className="ledger">
+            {DEPARTMENTS.map((d, i) => (
+              <Reveal as="div" className="ledger-row" key={d.name} delay={(i % 3) + 1}>
+                <span className="ledger-index">0{i + 1}</span>
+                <div className="ledger-main">
+                  <h3 className="ledger-name">{d.name}</h3>
+                  <span className="ledger-head">Led by {d.head}</span>
+                </div>
+                <div className="ledger-members">
+                  {d.members.map((m) => (
+                    <span className="ledger-chip" key={m}>
+                      <span className="ledger-mini">{initials(m)}</span>{m}
+                    </span>
+                  ))}
+                </div>
+                <FiArrowUpRight className="ledger-arrow" />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Culture ---------- */}
+      <section className="section culture-section">
+        <div className="container">
+          <Reveal className="section-head">
+            <span className="eyebrow">How we work</span>
+            <h2 className="section-title">Three things we never compromise</h2>
+          </Reveal>
+          <div className="culture-grid">
+            {VALUES.map((v, i) => (
+              <Reveal className="culture-card" key={v.title} delay={(i % 3) + 1}>
+                <span className="culture-icon">{v.icon}</span>
+                <h3>{v.title}</h3>
+                <p>{v.body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Join CTA ---------- */}
+      <section className="cta-section">
+        <div className="container">
+          <Reveal className="cta-band">
+            <span className="cta-glow" aria-hidden="true" />
+            <div className="cta-content">
+              <h2 className="cta-title">Want to build this with us?</h2>
+              <p className="cta-sub">
+                We’re always looking for people who care about doing things the honest way.
+              </p>
+              <div className="cta-actions">
+                <Magnetic strength={0.4}>
+                  <Link to="/contact" className="btn btn-light btn-lg">Get in touch <FiArrowUpRight /></Link>
+                </Magnetic>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       <Footer />
-    </>
+    </div>
   );
 };
 

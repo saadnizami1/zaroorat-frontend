@@ -1,99 +1,42 @@
-
 .discover-page {
-  background: var(--color-surface);
-  padding: 7rem 2rem 3rem;
+  padding-block: clamp(3rem, 6vw, 4.5rem) clamp(3.5rem, 7vw, 6rem);
 }
-
-.discover-page h1 {
-  color: var(--color-primary);
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.discover-content {
-  display: flex;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  flex-wrap: wrap;
-}
-
-.content-left {
-  flex: 1;
-  min-width: 280px;
-}
-
-.start-campaign {
-  display: inline-block;
-  background: var(--color-accent);
-  color: var(--color-text-light);
-  padding: 0.6rem 1.2rem;
-  border-radius: 0.5rem;
-  text-decoration: none;
-  font-weight: 600;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  margin-bottom: 1.5rem;
-}
-
-.start-campaign:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-}
-
-.categories-grid {
+.discover-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
-  gap: 1.2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--hairline);
+  border: 1px solid var(--hairline);
 }
-
-.category-card {
-  background: var(--color-background);
-  border-radius: 0.8rem;
-  padding: 1rem;
-  text-align: center;
-  color: var(--color-primary);
-  cursor: pointer;
-}
-
-.category-card:hover {
-    border: 2px dotted var(--color-accent);
-}
-
-.category-card .icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--color-text-dark);
-}
-
-.category-card span {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.content-right {
-  flex: 1;
-  min-width: 280px;
+.discover-reveal { height: 100%; }
+.discover-card {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 1.1rem;
+  height: 100%;
+  background: var(--bg);
+  padding: 1.6rem;
+  transition: background var(--t-fast);
 }
-
-.content-right img {
-  width: 100%;
-  max-width: 600px;
-  border-radius: 0.8rem;
-  object-fit: cover;
+.discover-card:hover { background: var(--glass); }
+.discover-icon {
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border: 1px solid var(--glass-border);
+  color: var(--green);
+  font-size: 1.6rem;
+  transition: background var(--t-fast);
 }
-
-
-@media (max-width: 768px) {
-  .discover-content {
-    flex-direction: column;
-    align-items: center;
-  }
-  .start-campaign {
-    margin-bottom: 2rem;
-  }
+.discover-card:hover .discover-icon { background: var(--glass-2); }
+.discover-label { font-family: var(--font-display); font-weight: 500; font-size: 1.05rem; color: var(--text); }
+.discover-arrow {
+  position: absolute; top: 1.6rem; right: 1.6rem;
+  color: var(--text-faint); font-size: 1.1rem;
+  transition: color var(--t-fast), transform var(--t-fast);
 }
+.discover-card:hover .discover-arrow { color: var(--green); transform: translate(2px, -2px); }
+
+@media (max-width: 900px) { .discover-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 620px) { .discover-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 400px) { .discover-grid { grid-template-columns: 1fr; } }

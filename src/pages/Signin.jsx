@@ -1,17 +1,17 @@
 import { useContext, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import "../css/Signin.css";
 import { Link, useNavigate } from "react-router-dom";
-import { FiHome } from "react-icons/fi";
 import axios from "axios";
+import toast from "react-hot-toast";
+import AuthLayout from "../components/AuthLayout";
+import PhoneInput from "../components/PhoneInput";
 import { CampaignContext } from "../store/campaignStore";
-import toast, { Toaster } from "react-hot-toast";
+import { fullPkPhone, isValidPkMobile } from "../utils/pakistan";
 
 const Signin = () => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState(null);
   const [isSending, setIsSending] = useState(false);
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
@@ -20,222 +20,133 @@ const Signin = () => {
   });
 
   const { setUser, apiURL } = useContext(CampaignContext);
-
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const change = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSending(true);
 
     if (isSignUp) {
-      const handleSignup = async () => {
-        try {
-          if (formData.password !== formData.confirmPassword) {
-            const msg = "Passwords do not match, Please try again";
-            setError(msg);
-            toast.error(msg);
-            setIsSending(false);
-            return;
-          }
-
-          const signupBody = {
-            fullName: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            password: formData.password,
-          };
-
-          const res = await axios.post(`${apiURL}/api/auth/signup`, signupBody);
-
-          if (res) {
-            setFormData({
-              name: "",
-              email: "",
-              password: "",
-              confirmPassword: "",
-              phone: "",
-            });
-            toast.success("Signup successful! Please log in.");
-            setIsSignUp(false);
-          }
-        } catch (error) {
-          const errMsg =
-            error.response?.data?.message ||
-            error.response?.data?.msg ||
-            error.message;
-          setError(errMsg);
-          toast.error(errMsg);
-        } finally {
-          setIsSending(false);
-        }
-      };
-
-      handleSignup();
+      if (form.password !== form.confirmPassword) {
+        toast.error("Passwords do not match.");
+        setIsSending(false);
+        return;
+      }
+      if (!isValidPkMobile(form.phone)) {
+        toast.error("Enter a valid Pakistani mobile number (+92 3XX XXXXXXX).");
+        setIsSending(false);
+        return;
+      }
+      try {
+        await axios.post(`${apiURL}/api/auth/signup`, {
+          fullName: form.name,
+          email: form.email,
+          phone: fullPkPhone(form.phone),
+          password: form.password,
+        });
+        toast.success("Account created! Please sign in.");
+        setForm({ name: "", email: "", password: "", confirmPassword: "", phone: "" });
+        setIsSignUp(false);
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+      } finally {
+        setIsSending(false);
+      }
     } else {
-      const handleSignin = async () => {
-        try {
-          const res = await axios.post(
-            `${apiURL}/api/auth/login`,
-            {
-              email: formData.email,
-              password: formData.password,
-            },
-            {
-              withCredentials: true,
-            }
-          );
-
-          setUser(res.data.user);
-          localStorage.setItem("user", JSON.stringify(res.data.user));
-
-          setFormData({
-            name: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-            phone: "",
-          });
-
-          toast.success("Successfully signed in!");
-          setTimeout(() => {
-             navigate("/");
-          }, 3000);
-         
-        } catch (error) {
-          const errMsg =
-            error.response?.data?.message ||
-            error.response?.data?.msg ||
-            error.message;
-          setError(errMsg);
-          toast.error(errMsg);
-        } finally {
-          setIsSending(false);
-        }
-      };
-
-      handleSignin();
+      try {
+        const res = await axios.post(
+          `${apiURL}/api/auth/login`,
+          { email: form.email, password: form.password },
+          { withCredentials: true }
+        );
+        setUser(res.data.user);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        toast.success("Welcome back!");
+        setTimeout(() => navigate("/"), 1200);
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+      } finally {
+        setIsSending(false);
+      }
     }
   };
 
-  const handleFormChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     window.location.href = `${apiURL}/api/auth/google`;
   };
 
   return (
-    <div className="signin-body">
-      <Toaster />
-      <Link to="/" className="home-icon">
-        <FiHome />
-      </Link>
-
-      <div className="signin-card">
-        <h2 className="signin-title">
-          {isSignUp ? "Create an Account" : "Welcome Back"}
-        </h2>
-
-        {!isSignUp && (
-          <button className="btn google-btn" onClick={handleGoogleLogin}>
-            <span className="btn-icon">
-              <FcGoogle size={20} />
-            </span>
+    <AuthLayout
+      title={isSignUp ? "Create your account" : "Welcome back"}
+      subtitle={
+        isSignUp
+          ? "Start fundraising or give to causes you care about."
+          : "Sign in to continue your journey of giving."
+      }
+    >
+      {!isSignUp && (
+        <>
+          <button className="google-btn" onClick={handleGoogleLogin} type="button">
+            <FcGoogle size={20} />
             <span>Continue with Google</span>
           </button>
-        )}
+          <div className="auth-divider"><span>or</span></div>
+        </>
+      )}
 
-        <div className="divider">
-          <span className="line" />
-          <span className="or">OR</span>
-          <span className="line" />
+      <form className="auth-form" onSubmit={handleSubmit}>
+        {isSignUp && (
+          <div className="field">
+            <label className="field-label">Full name</label>
+            <input className="input" name="name" value={form.name} required onChange={change} placeholder="e.g. Ayesha Khan" />
+          </div>
+        )}
+        <div className="field">
+          <label className="field-label">Email address</label>
+          <input className="input" type="email" name="email" value={form.email} required onChange={change} placeholder="you@email.com" />
+        </div>
+        <div className="field">
+          <label className="field-label">Password</label>
+          <input className="input" type="password" name="password" value={form.password} required onChange={change} placeholder="••••••••" />
         </div>
 
-        <form className="signin-form" onSubmit={handleSubmit}>
-          {isSignUp && (
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              required
-              onChange={handleFormChange}
-            />
-          )}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            required
-            onChange={handleFormChange}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            required
-            onChange={handleFormChange}
-          />
-
-          {/* Error shown only if it's a string */}
-          {/* {error && typeof error === "string" && (
-            <span className="error-message">{error}</span>
-          )} */}
-
-          {isSignUp && (
-            <>
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
+        {isSignUp && (
+          <>
+            <div className="field">
+              <label className="field-label">Confirm password</label>
+              <input className="input" type="password" name="confirmPassword" value={form.confirmPassword} required onChange={change} placeholder="••••••••" />
+            </div>
+            <div className="field">
+              <label className="field-label">Mobile number</label>
+              <PhoneInput
+                value={form.phone}
+                onChange={(v) => setForm((p) => ({ ...p, phone: v }))}
+                invalid={form.phone.length > 0 && !isValidPkMobile(form.phone)}
                 required
-                onChange={handleFormChange}
               />
-              <input
-                type="number"
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
-                required
-                onChange={handleFormChange}
-              />
-            </>
-          )}
+            </div>
+          </>
+        )}
 
-          <button
-            type="submit"
-            className="btn primary-btn"
-            disabled={isSending}
-          >
-            {isSending ? "Sending…" : isSignUp ? "Sign Up" : "Sign In"}
-          </button>
-        </form>
+        <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isSending}>
+          {isSending ? "Please wait…" : isSignUp ? "Create account" : "Sign in"}
+        </button>
+      </form>
 
-        <p className="toggle-text">
-          {isSignUp ? "Already have an account? " : "Don't have an account? "}
-          <span
-            className="toggle-link"
-            onClick={() => {
-              setIsSignUp((prev) => !prev);
-              setError(null);
-            }}
-          >
-            {isSignUp ? "Sign In" : "Sign Up"}
-          </span>
+      <p className="auth-toggle">
+        {isSignUp ? "Already have an account? " : "New to Zaroorat? "}
+        <button type="button" onClick={() => setIsSignUp((s) => !s)}>
+          {isSignUp ? "Sign in" : "Create an account"}
+        </button>
+      </p>
+      {!isSignUp && (
+        <p className="auth-reset">
+          <Link to="/forgot-password">Forgot your password?</Link>
         </p>
-
-        <p className="reset-text">
-          Forgot password?
-          <Link to="/forgot-password">
-            <span className="reset-link">Reset Password</span>
-          </Link>
-        </p>
-      </div>
-    </div>
+      )}
+    </AuthLayout>
   );
 };
 

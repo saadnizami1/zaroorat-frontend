@@ -1,15 +1,13 @@
 import { useContext, useState } from "react";
-import "../css/Signin.css";
-import { FiHome } from "react-icons/fi";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
+import AuthLayout from "../components/AuthLayout";
 import { CampaignContext } from "../store/campaignStore";
-import toast, { Toaster } from "react-hot-toast";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { apiURL } = useContext(CampaignContext);
@@ -18,77 +16,38 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("Passwords do not match.");
       return;
     }
-
     setIsLoading(true);
     try {
-      const res = await axios.post(
-        `${apiURL}/api/auth/reset-password/${resetToken}`,
-        { newPassword: password }
-      );
-
-      if (res) {
-        toast.success("Password reset successfully!");
-        setTimeout(() => navigate("/"), 3000);
-      }
+      await axios.post(`${apiURL}/api/auth/reset-password/${resetToken}`, { newPassword: password });
+      toast.success("Password reset successfully!");
+      setTimeout(() => navigate("/signin"), 2200);
     } catch (error) {
-      const errMsg =
-        error.response?.data?.message ||
-        error.response?.data?.msg ||
-        error.message;
-
-      console.error("Reset error:", errMsg);
-      setError(errMsg);
-      toast.error(errMsg);
+      toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="signin-body">
-      <Toaster />
-      <Link to="/" className="home-icon">
-        <FiHome />
-      </Link>
-      <div className="signin-card">
-        <h2 className="signin-title">Reset Password</h2>
-
-        <form className="signin-form" onSubmit={handleSubmit}>
-          <input
-            type="password"
-            name="password"
-            placeholder="New Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm New Password"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          {error && <span className="error-message">{error}</span>}
-          <button type="submit" className="btn primary-btn" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                Resetting
-                <span className="spinner" />
-              </>
-            ) : (
-              "Reset Password"
-            )}
-          </button>
-        </form>
-      </div>
-    </div>
+    <AuthLayout title="Set a new password" subtitle="Choose a strong password you’ll remember.">
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="field">
+          <label className="field-label">New password</label>
+          <input className="input" type="password" value={password} required onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <div className="field">
+          <label className="field-label">Confirm new password</label>
+          <input className="input" type="password" value={confirmPassword} required onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isLoading}>
+          {isLoading ? "Resetting…" : "Reset password"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 };
 
