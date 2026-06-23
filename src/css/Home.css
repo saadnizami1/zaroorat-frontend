@@ -348,6 +348,20 @@
    ========================================================= */
 .cats-section { border-top: 1px solid var(--hairline); background: var(--bg-2); }
 .cats-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: 2.6rem; }
+.cats-all { flex-shrink: 0; }
+@media (max-width: 640px) {
+  .cats-head { flex-direction: column; align-items: flex-start; gap: 1.1rem; }
+  /* Full-width, solid + clearly visible on the light band (the frosted-glass
+     ghost style washes out on mobile where backdrop-filter is weak). */
+  .cats-all {
+    display: flex;
+    width: 100%;
+    background: var(--surface);
+    border-color: var(--glass-border-2);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
 .cats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); }
 .cat-reveal { height: 100%; }
 .cat-tile {

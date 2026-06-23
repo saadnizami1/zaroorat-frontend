@@ -585,6 +585,11 @@ input, textarea, select { font-family: inherit; font-size: 1rem; color: var(--te
 body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor button,
 body.has-custom-cursor [role="button"], body.has-custom-cursor .magnetic { cursor: none; }
 body.has-custom-cursor input, body.has-custom-cursor textarea, body.has-custom-cursor select { cursor: text; }
+/* Hard guard: never show the custom cursor on touch / coarse-pointer devices,
+   no matter what JS does — kills any stray dot parked in the top-left corner. */
+@media (hover: none), (pointer: coarse) {
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
 
 /* ---- Magnetic ---- */
 .magnetic { will-change: transform; }
