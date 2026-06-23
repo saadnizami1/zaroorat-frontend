@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
 import useLiveTotal from "../../hooks/useLiveTotal";
@@ -56,10 +56,12 @@ const Hero = () => {
 
         <h1 ref={titleRef} className={`hero-title word-reveal ${titleIn ? "in" : ""}`}>
           {TITLE.map((w, i) => (
-            <span key={i} className="w" style={{ transitionDelay: `${i * 0.07}s` }}>
+            <Fragment key={i}>
               {w.break ? <br className="hero-br" /> : null}
-              <span className={w.accent ? "hero-accent" : undefined}>{w.t}</span>{" "}
-            </span>
+              <span className="w" style={{ transitionDelay: `${i * 0.07}s` }}>
+                <span className={w.accent ? "hero-accent" : undefined}>{w.t}</span>
+              </span>{" "}
+            </Fragment>
           ))}
         </h1>
 

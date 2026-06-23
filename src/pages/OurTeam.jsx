@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaEnvelope, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { FiArrowUpRight, FiShield, FiHeart, FiZap } from "react-icons/fi";
@@ -56,7 +56,9 @@ const OurTeam = () => {
           <span className="eyebrow">Our team · Pakistan</span>
           <h1 ref={titleRef} className={`team-title word-reveal ${titleIn ? "in" : ""}`}>
             {"The people behind every".split(" ").map((w, i) => (
-              <span key={i} className="w" style={{ transitionDelay: `${i * 0.06}s` }}>{w}{" "}</span>
+              <Fragment key={i}>
+                <span className="w" style={{ transitionDelay: `${i * 0.06}s` }}>{w}</span>{" "}
+              </Fragment>
             ))}
             <span className="w team-accent" style={{ transitionDelay: "0.3s" }}>verified rupee.</span>
           </h1>

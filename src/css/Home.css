@@ -112,7 +112,7 @@
   font-variant-numeric: tabular-nums;
 }
 .console-live .console-value { color: var(--m-700); }
-.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--m-600); animation: pulse-ring 1.8s infinite; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--m-600); }
 
 .hero-scrollcue {
   position: absolute; bottom: 1.6rem; left: 50%; transform: translateX(-50%);
@@ -181,7 +181,7 @@
 /* =========================================================
    MANIFESTO (kinetic dual marquee + editorial statement)
    ========================================================= */
-.manifesto { padding-block: clamp(4rem, 9vw, 8rem); overflow: hidden; }
+.manifesto { padding-block: clamp(4rem, 9vw, 8rem); overflow: hidden; background: var(--bg); border-block: 1px solid var(--hairline); }
 .manifesto .marquee-giant + .marquee-giant { margin-top: 0.4rem; }
 .manifesto-statement {
   margin: clamp(3rem, 7vw, 6rem) auto 0;
@@ -203,6 +203,12 @@
   animation: hue-pan 9s linear infinite;
 }
 .manifesto-soft { color: var(--text-dim); }
+@media (max-width: 700px) {
+  .mq-word { font-size: clamp(1.5rem, 7.5vw, 2.4rem); padding-inline: 0.9rem; gap: 1rem; }
+  .mq-word::after { font-size: 0.38em; }
+  .manifesto { padding-block: clamp(3rem, 9vw, 5rem); }
+  .manifesto-statement { margin-top: 2.6rem; }
+}
 
 /* =========================================================
    IMPACT BAND (full-bleed dark matcha · counters)

@@ -25,8 +25,8 @@
 .topbar-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: 34px;
+  justify-content: flex-end;
+  height: 32px;
 }
 .topbar-trust {
   display: inline-flex;
@@ -39,7 +39,6 @@
   width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--m-600);
-  animation: pulse-ring 2s infinite;
 }
 .topbar-links { display: flex; align-items: center; gap: 0.9rem; }
 .topbar-links a {
@@ -247,8 +246,7 @@
   .account .account-name { display: none; }
 }
 @media (max-width: 620px) {
-  .topbar-trust { font-size: 0.66rem; }
-  .topbar-links { display: none; }
+  .topbar { display: none; }
   .account-btn { display: none; }
   .nav-signin { display: none; }
 }

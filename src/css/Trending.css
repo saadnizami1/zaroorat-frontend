@@ -1,4 +1,4 @@
-.trending-section { padding-block: var(--section-y); }
+.trending-section { padding-block: var(--section-y); border-top: 1px solid var(--hairline); }
 .trending-head {
   display: flex;
   align-items: flex-end;

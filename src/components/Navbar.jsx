@@ -50,10 +50,6 @@ const Navbar = () => {
       {/* Slim trust strip */}
       <div className="topbar">
         <div className="container topbar-inner">
-          <span className="topbar-trust">
-            <span className="topbar-dot" />
-            Pakistan's trusted, fully-verified giving platform
-          </span>
           <nav className="topbar-links">
             <Link to="/impact">Impact</Link>
             <span className="topbar-sep" />

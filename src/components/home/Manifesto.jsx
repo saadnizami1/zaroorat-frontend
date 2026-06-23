@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import useInView from "../../hooks/useInView";
 
 const ROW_A = ["Verified", "Transparent", "Dignified", "Accountable"];
@@ -7,7 +8,7 @@ const Manifesto = () => {
   const [ref, inView] = useInView({ threshold: 0.25 });
 
   return (
-    <section className="manifesto section-paper">
+    <section className="manifesto">
       <div className="marquee-giant" aria-hidden="true">
         <div className="marquee-giant-track">
           {[...ROW_A, ...ROW_A].map((w, i) => (
@@ -26,12 +27,16 @@ const Manifesto = () => {
       <div className="container">
         <p ref={ref} className={`manifesto-statement word-reveal ${inView ? "in" : ""}`}>
           {"We believe giving should be".split(" ").map((w, i) => (
-            <span key={i} className="w" style={{ transitionDelay: `${i * 0.05}s` }}>{w}{" "}</span>
+            <Fragment key={i}>
+              <span className="w" style={{ transitionDelay: `${i * 0.05}s` }}>{w}</span>{" "}
+            </Fragment>
           ))}
           <span className="w manifesto-em" style={{ transitionDelay: "0.3s" }}>certain.</span>
           <br />
           {"Every campaign reviewed. Every rupee traced.".split(" ").map((w, i) => (
-            <span key={i} className="w manifesto-soft" style={{ transitionDelay: `${0.35 + i * 0.04}s` }}>{w}{" "}</span>
+            <Fragment key={`b${i}`}>
+              <span className="w manifesto-soft" style={{ transitionDelay: `${0.35 + i * 0.04}s` }}>{w}</span>{" "}
+            </Fragment>
           ))}
         </p>
       </div>

@@ -14,7 +14,12 @@ const CustomCursor = () => {
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (!fine.matches || reduce.matches) return;
+    const isTouch =
+      window.matchMedia("(pointer: coarse)").matches ||
+      navigator.maxTouchPoints > 0 ||
+      "ontouchstart" in window;
+    // Mouse-primary desktops only — never phones or tablets.
+    if (!fine.matches || reduce.matches || isTouch || window.innerWidth < 1024) return;
 
     document.body.classList.add("has-custom-cursor");
     const dot = dotRef.current;
