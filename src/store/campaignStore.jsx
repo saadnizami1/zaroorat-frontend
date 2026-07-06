@@ -10,7 +10,12 @@ export const CampaignContext = createContext({
   isValidZip:()=>{},
 });
 
-const apiURL = import.meta.env.VITE_APP_URL;
+// Dev: talk to the local backend from .env. Production: the API is served
+// same-origin — vercel.json proxies /api/* to the Render backend, so the app
+// works on any domain with no CORS and first-party cookies.
+const apiURL = import.meta.env.DEV
+  ? (import.meta.env.VITE_APP_URL || "http://localhost:5000")
+  : "";
 
 const CampaignProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);

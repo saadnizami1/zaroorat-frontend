@@ -16,7 +16,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import DonateModal from "../components/DonationPayment";
 import { CampaignContext } from "../store/campaignStore";
-import { formatPKR, progressPercent } from "../utils/format";
+import { formatPKR, progressPercent, optimizedImage } from "../utils/format";
 import { formatCategory } from "../utils/categories";
 import "../css/Donate.css";
 
@@ -160,7 +160,7 @@ const Donate = () => {
           {/* ---------- Main column ---------- */}
           <article className="donate-main">
             <div className="donate-cover-wrap">
-              <img src={fund?.coverImage} alt={fund?.fundraiseTitle} className="donate-cover" />
+              <img src={optimizedImage(fund?.coverImage, 1600)} alt={fund?.fundraiseTitle} className="donate-cover" />
               {fund?.fundCategory && (
                 <span className="donate-cat">{formatCategory(fund.fundCategory)}</span>
               )}

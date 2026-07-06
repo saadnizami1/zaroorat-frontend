@@ -9,6 +9,7 @@ import CampaignCard from "../components/CampaignCard";
 import Reveal from "../components/Reveal";
 import { CampaignContext } from "../store/campaignStore";
 import { formatCategory } from "../utils/categories";
+import { readCache, writeCache } from "../utils/sessionCache";
 import "../css/Fundraisers.css";
 
 const Fundraisers = () => {
@@ -22,13 +23,21 @@ const Fundraisers = () => {
   const query = category || "";
 
   useEffect(() => {
-    (async () => {
+    const cacheKey = `funds:${query}`;
+    const cached = readCache(cacheKey);
+    if (cached) {
+      setFunds(cached);
+      setIsLoading(false);
+    } else {
       setIsLoading(true);
+    }
+    setCurrentPage(1);
+    (async () => {
       try {
         const res = await axios.get(`${apiURL}/api/fund/fund-list?search=${query}`);
         if (res.data?.funds) {
           setFunds(res.data.funds);
-          setCurrentPage(1);
+          writeCache(cacheKey, res.data.funds);
         }
       } catch (error) {
         console.error("Error fetching fundraisers: ", error);

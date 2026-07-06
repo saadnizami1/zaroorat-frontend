@@ -1,26 +1,31 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Premium trailing cursor: a precise dot + a lagging ring that grows over
- * interactive elements. Fine-pointer + motion-OK only; otherwise renders nothing
- * and leaves the native cursor untouched.
+ * interactive elements. Mouse-primary desktops ONLY — it renders nothing at all
+ * on phones, tablets, touch laptops, small screens, or reduced-motion, so no
+ * stray dot is ever left behind.
  */
 const INTERACTIVE = 'a, button, [role="button"], .magnetic, input, textarea, select, [data-cursor]';
 
+const isEligible = () => {
+  if (typeof window === "undefined") return false;
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isTouch =
+    window.matchMedia("(pointer: coarse)").matches ||
+    navigator.maxTouchPoints > 0 ||
+    "ontouchstart" in window;
+  return fine && !reduce && !isTouch && window.innerWidth >= 1024;
+};
+
 const CustomCursor = () => {
+  const [enabled] = useState(isEligible);
   const dotRef = useRef(null);
   const ringRef = useRef(null);
 
   useEffect(() => {
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const isTouch =
-      window.matchMedia("(pointer: coarse)").matches ||
-      navigator.maxTouchPoints > 0 ||
-      "ontouchstart" in window;
-    // Mouse-primary desktops only — never phones or tablets.
-    if (!fine.matches || reduce.matches || isTouch || window.innerWidth < 1024) return;
-
+    if (!enabled) return;
     document.body.classList.add("has-custom-cursor");
     const dot = dotRef.current;
     const ring = ringRef.current;
@@ -63,7 +68,9 @@ const CustomCursor = () => {
       document.removeEventListener("mouseenter", onEnter);
       document.body.classList.remove("has-custom-cursor");
     };
-  }, []);
+  }, [enabled]);
+
+  if (!enabled) return null;
 
   return (
     <>

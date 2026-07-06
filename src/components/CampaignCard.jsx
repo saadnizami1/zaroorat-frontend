@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FiMapPin, FiUsers } from "react-icons/fi";
-import { formatPKR, progressPercent } from "../utils/format";
+import { formatPKR, progressPercent, optimizedImage } from "../utils/format";
 import { formatCategory } from "../utils/categories";
 import "../css/CampaignCard.css";
 
@@ -20,7 +20,7 @@ const CampaignCard = ({ fund, topRight = null, footer = null, eager = false }) =
       <div className="ccard-media-wrap">
         <Link to={`/donate/${fund._id}`} className="ccard-media" aria-label={fund.fundraiseTitle}>
           <img
-            src={fund.coverImage}
+            src={optimizedImage(fund.coverImage, 800)}
             alt={fund.fundraiseTitle}
             loading={eager ? "eager" : "lazy"}
             decoding="async"

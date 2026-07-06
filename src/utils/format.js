@@ -23,3 +23,19 @@ export const progressPercent = (raised = 0, goal = 0) => {
   if (!goal || goal <= 0) return 0;
   return Math.min(100, Math.round((raised / goal) * 100));
 };
+
+/** Ask Cloudinary for a right-sized, modern-format (WebP/AVIF) version of an
+ *  uploaded image. Non-Cloudinary URLs and already-transformed URLs pass
+ *  through untouched. */
+export const optimizedImage = (url, width = 800) => {
+  if (
+    !url ||
+    typeof url !== "string" ||
+    !url.includes("res.cloudinary.com") ||
+    !url.includes("/upload/") ||
+    url.includes("f_auto")
+  ) {
+    return url;
+  }
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width},c_limit/`);
+};

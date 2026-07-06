@@ -4,6 +4,7 @@ import { FiArrowRight } from "react-icons/fi";
 import axios from "axios";
 import { CampaignContext } from "../store/campaignStore";
 import CampaignCard from "./CampaignCard";
+import { readCache, writeCache } from "../utils/sessionCache";
 import "../css/Trending.css";
 
 const Trending = () => {
@@ -12,11 +13,17 @@ const Trending = () => {
   const { apiURL } = useContext(CampaignContext);
 
   useEffect(() => {
+    const cached = readCache("funds:trending");
+    if (cached) {
+      setFunds(cached);
+      setIsLoading(false);
+    }
     (async () => {
-      setIsLoading(true);
       try {
         const res = await axios.get(`${apiURL}/api/fund/trending`, { withCredentials: true });
-        setFunds(res.data.trendingFunds || []);
+        const fresh = res.data.trendingFunds || [];
+        setFunds(fresh);
+        writeCache("funds:trending", fresh);
       } catch (err) {
         console.error("Error fetching trending funds:", err);
       } finally {
