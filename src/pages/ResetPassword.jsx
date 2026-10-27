@@ -4,6 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import AuthLayout from "../components/AuthLayout";
 import { CampaignContext } from "../store/campaignStore";
+import { errorMessage } from "../utils/axios";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -26,7 +27,7 @@ const ResetPassword = () => {
       toast.success("Password reset successfully!");
       setTimeout(() => navigate("/signin"), 2200);
     } catch (error) {
-      toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+      toast.error(errorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -38,6 +39,9 @@ const ResetPassword = () => {
         <div className="field">
           <label className="field-label">New password</label>
           <input className="input" type="password" value={password} required onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+          <span className="auth-hint">
+            6–18 characters, with an uppercase letter, a lowercase letter, a number and a symbol.
+          </span>
         </div>
         <div className="field">
           <label className="field-label">Confirm new password</label>

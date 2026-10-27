@@ -23,8 +23,8 @@ const Terms = () => {
       <p>
         Every fundraiser is <strong>reviewed and approved by our team before it goes live</strong>.
         Campaigners must describe their cause honestly and use raised funds for the stated purpose.
-        We accept only a small, carefully verified set of cases, and we may pause, close or reject a
-        campaign that is misleading, incomplete, or unable to be verified.
+        We review every case carefully, and we may pause, close or reject a campaign that is
+        misleading, incomplete, or unable to be verified.
       </p>
 
       <h2>Donations</h2>

@@ -10,6 +10,8 @@ import "../css/Trending.css";
 const Trending = () => {
   const [funds, setFunds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const { apiURL } = useContext(CampaignContext);
 
   useEffect(() => {
@@ -18,19 +20,22 @@ const Trending = () => {
       setFunds(cached);
       setIsLoading(false);
     }
+    setFailed(false);
     (async () => {
       try {
         const res = await axios.get(`${apiURL}/api/fund/trending`, { withCredentials: true });
-        const fresh = res.data.trendingFunds || [];
+        if (!Array.isArray(res.data?.trendingFunds)) throw new Error("Unexpected response");
+        const fresh = res.data.trendingFunds;
         setFunds(fresh);
         writeCache("funds:trending", fresh);
       } catch (err) {
         console.error("Error fetching trending funds:", err);
+        if (!cached) setFailed(true);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [apiURL]);
+  }, [apiURL, reloadKey]);
 
   return (
     <section className="section trending-section">
@@ -61,6 +66,15 @@ const Trending = () => {
               </div>
             ))}
           </div>
+        </div>
+      ) : failed ? (
+        <div className="container">
+          <p className="no-funds">
+            Campaigns couldn't load just now.{" "}
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setReloadKey((k) => k + 1)}>
+              Try again
+            </button>
+          </p>
         </div>
       ) : funds.length === 0 ? (
         <div className="container"><p className="no-funds">No trending campaigns yet — be the first to start one.</p></div>

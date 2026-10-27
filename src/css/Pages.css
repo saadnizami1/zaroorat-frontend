@@ -57,6 +57,8 @@
 .contact-sent p { color: var(--text-soft); line-height: 1.7; }
 .contact-sent strong { color: var(--m-700); }
 .contact-sent .btn { margin-top: 0.7rem; }
+.contact-fallback { font-size: 0.9rem; color: var(--text-soft); line-height: 1.6; }
+.contact-fallback a { color: var(--m-700); text-decoration: underline; }
 
 /* team */
 .team-lead { display: flex; justify-content: center; margin-bottom: 2.5rem; }

@@ -1,7 +1,8 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { AiFillDelete } from "react-icons/ai";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PageHero from "../components/PageHero";
@@ -10,42 +11,63 @@ import Reveal from "../components/Reveal";
 import { CampaignContext } from "../store/campaignStore";
 import { formatCategory } from "../utils/categories";
 import { readCache, writeCache } from "../utils/sessionCache";
+import { errorMessage } from "../utils/axios";
 import "../css/Fundraisers.css";
 
+const CACHE_KEY = "funds:";
+
 const Fundraisers = () => {
-  const [funds, setFunds] = useState([]);
+  const [allFunds, setAllFunds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
   const { apiURL, user } = useContext(CampaignContext);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   const { category } = useParams();
   const query = category || "";
 
+  // Fetch every live campaign once; categories are filtered locally so
+  // switching between them is instant.
   useEffect(() => {
-    const cacheKey = `funds:${query}`;
-    const cached = readCache(cacheKey);
+    const cached = readCache(CACHE_KEY);
     if (cached) {
-      setFunds(cached);
+      setAllFunds(cached);
       setIsLoading(false);
     } else {
       setIsLoading(true);
     }
-    setCurrentPage(1);
+    setLoadError("");
     (async () => {
       try {
-        const res = await axios.get(`${apiURL}/api/fund/fund-list?search=${query}`);
-        if (res.data?.funds) {
-          setFunds(res.data.funds);
-          writeCache(cacheKey, res.data.funds);
-        }
+        const res = await axios.get(`${apiURL}/api/fund/fund-list?search=`);
+        // Anything but the JSON list (e.g. an HTML error page) counts as a failure.
+        if (!Array.isArray(res.data?.funds)) throw new Error("Unexpected response");
+        setAllFunds(res.data.funds);
+        writeCache(CACHE_KEY, res.data.funds);
       } catch (error) {
         console.error("Error fetching fundraisers: ", error);
+        if (!cached) setLoadError(errorMessage(error));
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [apiURL, query]);
+  }, [apiURL, reloadKey]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
+
+  // Exact category match. (The search API also matches titles, so "other"
+  // would pull in "Help my mother…".)
+  const funds = useMemo(
+    () =>
+      query
+        ? allFunds.filter((f) => (f.fundCategory || "").toLowerCase() === query.toLowerCase())
+        : allFunds,
+    [allFunds, query]
+  );
 
   const totalPages = Math.ceil(funds.length / perPage);
   const startIdx = (currentPage - 1) * perPage;
@@ -62,9 +84,14 @@ const Fundraisers = () => {
       const res = await axios.delete(`${apiURL}/api/admin/fund-raise/${fundId}`, {
         withCredentials: true,
       });
-      if (res.data) setFunds((prev) => prev.filter((f) => f._id !== fundId));
+      if (res.data) {
+        const remaining = allFunds.filter((f) => f._id !== fundId);
+        setAllFunds(remaining);
+        writeCache(CACHE_KEY, remaining);
+        toast.success("Campaign deleted.");
+      }
     } catch (error) {
-      console.log("Cannot delete due to error : ", error);
+      toast.error(errorMessage(error, "Couldn't delete the campaign."));
     }
   };
 
@@ -95,10 +122,27 @@ const Fundraisers = () => {
                 </div>
               ))}
             </div>
+          ) : loadError ? (
+            <div className="empty-state">
+              <h3>We couldn't load fundraisers</h3>
+              <p>{loadError}</p>
+              <button
+                className="btn btn-primary"
+                style={{ marginTop: "1.4rem" }}
+                onClick={() => setReloadKey((k) => k + 1)}
+              >
+                Try again
+              </button>
+            </div>
           ) : funds.length === 0 ? (
             <div className="empty-state">
               <h3>No fundraisers here yet</h3>
               <p>There are no active campaigns in this view right now. Check back soon.</p>
+              {query && (
+                <Link to="/fundraisers" className="btn btn-ghost" style={{ marginTop: "1.4rem" }}>
+                  Browse all fundraisers
+                </Link>
+              )}
             </div>
           ) : (
             <>

@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://backend-113.onrender.com/api/:path*"
+            "destination": "https://api.zaroorat.xyz/api/:path*"
         },
         {
             "source": "/((?!api/).*)",

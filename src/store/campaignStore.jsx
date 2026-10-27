@@ -10,12 +10,18 @@ export const CampaignContext = createContext({
   isValidZip:()=>{},
 });
 
-// Dev: talk to the local backend from .env. Production: the API is served
-// same-origin — vercel.json proxies /api/* to the Render backend, so the app
-// works on any domain with no CORS and first-party cookies.
+// Where the API lives:
+//  - local dev: the backend from .env (http://localhost:5000)
+//  - zaroorat.xyz / www.zaroorat.xyz: the Render backend on its own subdomain.
+//    Same site as the frontend, so the login cookie is first-party and Google
+//    sign-in (which calls back to api.zaroorat.xyz) keeps working.
+//  - any other host (the vercel.app address, preview deploys): same-origin
+//    /api, which vercel.json proxies to the backend.
 const apiURL = import.meta.env.DEV
   ? (import.meta.env.VITE_APP_URL || "http://localhost:5000")
-  : "";
+  : /(^|\.)zaroorat\.xyz$/.test(window.location.hostname)
+    ? "https://api.zaroorat.xyz"
+    : "";
 
 const CampaignProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);

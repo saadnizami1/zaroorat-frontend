@@ -1,5 +1,5 @@
 import { FiSearch } from "react-icons/fi";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -7,32 +7,54 @@ import Trending from "../components/Trending";
 import CampaignCard from "../components/CampaignCard";
 import Reveal from "../components/Reveal";
 import { CampaignContext } from "../store/campaignStore";
+import { formatCategory } from "../utils/categories";
+import { readCache, writeCache } from "../utils/sessionCache";
+import { errorMessage } from "../utils/axios";
 import "../css/Search.css";
+import "../css/Fundraisers.css";
+
+const CACHE_KEY = "funds:";
+
+// Everything a visitor might type: title, category, city, organiser.
+const haystack = (f) =>
+  [f.fundraiseTitle, f.fundCategory, formatCategory(f.fundCategory), f.cityName, f.country, f.userId?.fullName]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 
 const Search = () => {
-  const [funds, setFunds] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allFunds, setAllFunds] = useState(() => readCache(CACHE_KEY) || []);
+  const [isLoading, setIsLoading] = useState(() => !readCache(CACHE_KEY));
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const { apiURL } = useContext(CampaignContext);
 
+  // Load the live campaign list once, then search it locally — instant results
+  // and it can match cities ("Lahore"), which the API search can't.
   useEffect(() => {
-    const t = setTimeout(async () => {
-      if (!query.trim()) {
-        setFunds([]);
-        return;
-      }
-      setIsLoading(true);
+    (async () => {
       try {
-        const res = await axios.get(`${apiURL}/api/fund/fund-list?search=${query}`);
-        if (res.data?.funds) setFunds(res.data.funds);
+        const res = await axios.get(`${apiURL}/api/fund/fund-list?search=`);
+        if (!Array.isArray(res.data?.funds)) throw new Error("Unexpected response");
+        setAllFunds(res.data.funds);
+        writeCache(CACHE_KEY, res.data.funds);
       } catch (error) {
         console.error("Error fetching fundraisers: ", error);
+        setLoadError(errorMessage(error));
       } finally {
         setIsLoading(false);
       }
-    }, 280);
-    return () => clearTimeout(t);
-  }, [query, apiURL]);
+    })();
+  }, [apiURL]);
+
+  const funds = useMemo(() => {
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+    return allFunds.filter((f) => {
+      const text = haystack(f);
+      return words.every((w) => text.includes(w));
+    });
+  }, [allFunds, query]);
 
   return (
     <div className="page">
@@ -62,6 +84,11 @@ const Search = () => {
             <p className="search-hint">Start typing to discover campaigns.</p>
           ) : isLoading ? (
             <div className="loading-screen"><div className="spinner" /></div>
+          ) : loadError && allFunds.length === 0 ? (
+            <div className="empty-state">
+              <h3>Search is unavailable right now</h3>
+              <p>{loadError}</p>
+            </div>
           ) : funds.length === 0 ? (
             <div className="empty-state">
               <h3>No matches for “{query}”</h3>

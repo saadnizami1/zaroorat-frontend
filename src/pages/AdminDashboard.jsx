@@ -6,6 +6,7 @@ import axios from "axios";
 import { CampaignContext } from "../store/campaignStore";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { errorMessage } from "../utils/axios";
 
 const Dashboard = () => {
   const [loadingApproveCampaigns, setLoadingApproveCampaigns] = useState([]);
@@ -104,6 +105,7 @@ const Dashboard = () => {
     };
 
     fetchManagedFunds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   //Handling Approval & Rejection of Campaigns
@@ -123,7 +125,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.log("Error approving campaign:", error);
-        toast.error("Failed to approve campaign.");
+        toast.error(errorMessage(error, "Failed to approve campaign."));
       } finally {
         setLoadingApproveCampaigns((prev) =>
           prev.filter((id) => id !== acc._id)
@@ -134,6 +136,12 @@ const Dashboard = () => {
     approveCampaign();
   };
   const handleRejectCampaign = (acc) => {
+    if (
+      !window.confirm(
+        `Reject "${acc.fundraiseTitle}"? The campaign and its images will be permanently deleted and the organiser emailed.`
+      )
+    )
+      return;
     const rejectCampaign = async () => {
       setLoadingRejectCampaigns((prev) => [...prev, acc._id]);
       try {
@@ -148,7 +156,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.log("Error rejecting campaign:", error);
-        toast.error("Failed to reject campaign.");
+        toast.error(errorMessage(error, "Failed to reject campaign."));
       } finally {
         setLoadingRejectCampaigns((prev) =>
           prev.filter((id) => id !== acc._id)
@@ -161,6 +169,12 @@ const Dashboard = () => {
 
   //Handling Approval & Rejection of Account Deactivations
   const handleApproveDeactivation = (acc) => {
+    if (
+      !window.confirm(
+        `Permanently delete ${acc.fullName || acc.email}'s account?\n\nThis also deletes every fundraiser they created and every donation they made. It cannot be undone.`
+      )
+    )
+      return;
     const approveDeactivation = async () => {
       setLoadingApproveDeactivations((prev) => [...prev, acc._id]);
       try {
@@ -176,7 +190,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.log("Error approving deactivation:", error);
-        toast.error("Failed to approve deactivation.");
+        toast.error(errorMessage(error, "Failed to approve deactivation."));
       } finally {
         setLoadingApproveDeactivations((prev) =>
           prev.filter((id) => id !== acc._id)
@@ -185,7 +199,6 @@ const Dashboard = () => {
     };
 
     approveDeactivation();
-    // console.log('Approved deactivation', acc._id);
   };
   const handleRejectDeactivation = (acc) => {
     const rejectDeactivation = async () => {
@@ -203,7 +216,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.log("Error rejecting deactivation:", error);
-        toast.error("Failed to reject deactivation.");
+        toast.error(errorMessage(error, "Failed to reject deactivation."));
       } finally {
         setLoadingRejectDeactivations((prev) =>
           prev.filter((id) => id !== acc._id)
@@ -212,12 +225,16 @@ const Dashboard = () => {
     };
 
     rejectDeactivation();
-    // console.log('Rejected deactivation', acc._id);
   };
 
-  // ✅ ADD THESE 2 NEW HANDLER FUNCTIONS
   //Handling Verification & Rejection of Donations
   const handleVerifyDonation = (donation) => {
+    if (
+      !window.confirm(
+        `Verify PKR ${donation.amount?.toLocaleString()} from ${donation.fullName}?\n\nOnly confirm if the money has arrived in the Zaroorat account. This adds it to the campaign total and emails the donor a thank-you.`
+      )
+    )
+      return;
     const verifyDonation = async () => {
       setLoadingVerifyDonations((prev) => [...prev, donation._id]);
       try {
@@ -231,6 +248,16 @@ const Dashboard = () => {
           setPendingDonations((donations) =>
             donations.filter((d) => d._id !== donation._id)
           );
+          const updated = res.data.updatedFund;
+          if (updated?._id) {
+            setManagedFunds((funds) =>
+              funds.map((f) =>
+                f._id === updated._id
+                  ? { ...f, donationAmount: updated.donationAmount, donationCount: updated.donationCount }
+                  : f
+              )
+            );
+          }
           toast.success("Donation verified successfully!");
         }
         setLoadingVerifyDonations((prev) =>
@@ -238,7 +265,7 @@ const Dashboard = () => {
         );
       } catch (error) {
         console.log("Error verifying donation:", error);
-        toast.error("Failed to verify donation.");
+        toast.error(errorMessage(error, "Failed to verify donation."));
         setLoadingVerifyDonations((prev) =>
           prev.filter((id) => id !== donation._id)
         );
@@ -249,6 +276,12 @@ const Dashboard = () => {
   };
 
   const handleRejectDonation = (donation) => {
+    if (
+      !window.confirm(
+        `Reject the PKR ${donation.amount?.toLocaleString()} donation from ${donation.fullName}? The record and its payment screenshot will be deleted.`
+      )
+    )
+      return;
     const rejectDonation = async () => {
       setLoadingRejectDonations((prev) => [...prev, donation._id]);
       try {
@@ -268,7 +301,7 @@ const Dashboard = () => {
         );
       } catch (error) {
         console.log("Error rejecting donation:", error);
-        toast.error("Failed to reject donation.");
+        toast.error(errorMessage(error, "Failed to reject donation."));
         setLoadingRejectDonations((prev) =>
           prev.filter((id) => id !== donation._id)
         );
@@ -298,7 +331,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.log(`Error trying to ${action} campaign:`, error);
-        toast.error(`Failed to ${action} campaign.`);
+        toast.error(errorMessage(error, `Failed to ${action} campaign.`));
       } finally {
         setLoadingFundStatus((prev) => prev.filter((id) => id !== fund._id));
       }
@@ -360,7 +393,6 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* ✅ ADD THIS NEW SECTION */}
         <section className="admin-section">
           <h2>Pending Donations ({pendingDonations.length})</h2>
           <div className="admin-list">
@@ -387,7 +419,13 @@ const Dashboard = () => {
                   </p>
 
                   {donation.proofImage && (
-                    <div className="proof-image">
+                    <a
+                      className="proof-image"
+                      href={donation.proofImage}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open the full-size screenshot"
+                    >
                       <img
                         src={donation.proofImage}
                         alt="Payment Proof"
@@ -398,7 +436,8 @@ const Dashboard = () => {
                           borderRadius: "8px",
                         }}
                       />
-                    </div>
+                      <span className="card-sub">Tap to open full size ↗</span>
+                    </a>
                   )}
                 </div>
 

@@ -1,5 +1,7 @@
 import { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import CookieConsent from "../components/CookieConsent";
@@ -20,9 +22,12 @@ import { CampaignContext } from "../store/campaignStore";
 import "../css/Home.css";
 
 const Home = () => {
-  const { setUser } = useContext(CampaignContext);
+  const { setUser, apiURL } = useContext(CampaignContext);
   const location = useLocation();
 
+  // Google sign-in lands here as /?name=…&email=…&role=… with the session
+  // cookie already set. Load the full profile (it carries the user's _id,
+  // which owner-only UI relies on); fall back to the URL details if that fails.
   useEffect(() => {
     const params = new window.URLSearchParams(location.search);
     const googleUser = {
@@ -30,11 +35,26 @@ const Home = () => {
       email: params.get("email"),
       role: params.get("role"),
     };
-    if (googleUser.fullName && googleUser.email) {
-      setUser(googleUser);
-      localStorage.setItem("user", JSON.stringify(googleUser));
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    if (!googleUser.fullName || !googleUser.email) return;
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    (async () => {
+      let signedIn = googleUser;
+      try {
+        const res = await axios.get(`${apiURL}/api/user/profile`, { withCredentials: true });
+        if (res.data?.user) signedIn = res.data.user;
+      } catch (error) {
+        // 401 = the session cookie never arrived, so they aren't really signed in.
+        if (error.response?.status === 401) {
+          toast.error("Google sign-in didn't complete. Please try again, or sign in with your email.");
+          return;
+        }
+        /* otherwise keep the basic details from the redirect */
+      }
+      setUser(signedIn);
+      localStorage.setItem("user", JSON.stringify(signedIn));
+      toast.success(`Welcome, ${(signedIn.fullName || "").split(" ")[0] || "back"}!`);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

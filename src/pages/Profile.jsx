@@ -8,6 +8,8 @@ import Footer from "../components/Footer";
 import PhoneInput from "../components/PhoneInput";
 import { CampaignContext } from "../store/campaignStore";
 import { toLocalPkPhone, fullPkPhone, isValidPkMobile } from "../utils/pakistan";
+import { errorMessage } from "../utils/axios";
+import { compressImage } from "../utils/image";
 import "../css/Profile.css";
 
 const Profile = () => {
@@ -42,11 +44,10 @@ const Profile = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiURL]);
 
-  const handlePhotoChange = (e) => {
+  // The CNIC is a private document — keep it out of the avatar preview.
+  const handleCnicChange = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    setSelectedFile(file);
-    setPreviewImage(URL.createObjectURL(file));
+    if (file) setSelectedFile(file);
   };
 
   const handleSave = async () => {
@@ -54,29 +55,36 @@ const Profile = () => {
       return toast.error("Enter a valid Pakistani mobile number.");
     }
     try {
+      setIsSending(true);
       const formData = new FormData();
       formData.append("fullName", updatedUser.fullName);
       formData.append("phone", updatedUser.phone ? fullPkPhone(updatedUser.phone) : "");
       formData.append("cityName", updatedUser.cityName);
-      if (selectedFile) formData.append("cnicImage", selectedFile);
+      if (selectedFile) formData.append("cnicImage", await compressImage(selectedFile));
 
-      setIsSending(true);
       const res = await axios.put(`${apiURL}/api/user/update-profile`, formData, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (res.data.user) {
         setEditMode(false);
+        setSelectedFile(null);
         setUser(res.data.user);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         toast.success("Profile updated successfully!");
       }
     } catch (err) {
-      toast.error("Failed to update profile.");
+      toast.error(errorMessage(err, "Failed to update profile."));
     } finally {
       setIsSending(false);
     }
   };
+
+  const missing = [
+    !user?.phone && "mobile number",
+    !user?.cityName && "city",
+    !user?.cnicImage && "CNIC image",
+  ].filter(Boolean);
 
   const handleDeactivateAccount = async () => {
     if (!window.confirm("Request account deactivation? An admin will review your request.")) return;
@@ -84,7 +92,7 @@ const Profile = () => {
       await axios.post(`${apiURL}/api/user/account-deletion/request`, {}, { withCredentials: true });
       toast.success("Deactivation request sent successfully.");
     } catch (error) {
-      toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+      toast.error(errorMessage(error));
     }
   };
 
@@ -126,6 +134,12 @@ const Profile = () => {
               )}
             </div>
 
+            {missing.length > 0 && !editMode && (
+              <p className="profile-hint">
+                To start a fundraiser, add your {missing.join(", ")} — tap <strong>Edit</strong> above.
+              </p>
+            )}
+
             <div className="profile-fields">
               <div className="profile-field">
                 <span className="pf-label">Full name</span>
@@ -164,7 +178,7 @@ const Profile = () => {
                   <label className="upload-zone">
                     <FiCreditCard />
                     <span>{selectedFile?.name || "Upload your CNIC image"}</span>
-                    <input type="file" accept="image/*" onChange={handlePhotoChange} />
+                    <input type="file" accept="image/*" onChange={handleCnicChange} />
                   </label>
                 </div>
               )}

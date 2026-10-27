@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin-dashboard
+Disallow: /admin/
+Disallow: /profile
+Disallow: /myfunds
+Disallow: /reset-password/
+
+Sitemap: https://zaroorat.xyz/sitemap.xml

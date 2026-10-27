@@ -20,7 +20,7 @@ const Faq = () => {
 
       <section className="content">
         <div className="container" style={{ maxWidth: 820 }}>
-          {FAQ_GROUPS.map((group, i) => (
+          {FAQ_GROUPS.map((group) => (
             <Reveal key={group.group} delay={1} className="faq-group">
               <h2 className="faq-group-title">{group.group}</h2>
               <FaqAccordion items={group.items} allowMultiple />

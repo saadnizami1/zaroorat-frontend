@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { FiCheck, FiX, FiArrowLeft } from "react-icons/fi";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import { CampaignContext } from "../store/campaignStore";
 import { formatPKR, progressPercent } from "../utils/format";
 import { formatCategory } from "../utils/categories";
+import { errorMessage } from "../utils/axios";
 import "../css/Dashboard.css";
 
 const AdminCampaignPreview = () => {
@@ -18,8 +19,7 @@ const AdminCampaignPreview = () => {
   const [processing, setProcessing] = useState(false);
 
   if (!user || user.role !== "admin") {
-    navigate("/");
-    return null;
+    return <Navigate to="/" replace />;
   }
   if (!campaign) {
     return (
@@ -40,6 +40,13 @@ const AdminCampaignPreview = () => {
   const pct = progressPercent(donationAmount, totalAmountRaised);
 
   const handleDecision = async (approve) => {
+    if (
+      !approve &&
+      !window.confirm(
+        `Reject "${fundraiseTitle}"? The campaign and its images will be permanently deleted and the organiser emailed.`
+      )
+    )
+      return;
     setProcessing(true);
     try {
       if (approve) {
@@ -51,7 +58,7 @@ const AdminCampaignPreview = () => {
       }
       setTimeout(() => navigate("/admin-dashboard"), 800);
     } catch (err) {
-      toast.error("Action failed.");
+      toast.error(errorMessage(err, "Action failed."));
       setProcessing(false);
     }
   };
@@ -105,7 +112,9 @@ const AdminCampaignPreview = () => {
                 {cnicImage && (
                   <>
                     <h3 className="preview-h3">CNIC</h3>
-                    <img src={cnicImage} alt="CNIC" className="preview-cnic" />
+                    <a href={cnicImage} target="_blank" rel="noopener noreferrer" title="Open the full-size CNIC image">
+                      <img src={cnicImage} alt="CNIC" className="preview-cnic" />
+                    </a>
                   </>
                 )}
 

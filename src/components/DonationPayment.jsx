@@ -5,6 +5,7 @@ import { CampaignContext } from "../store/campaignStore";
 import PhoneInput from "./PhoneInput";
 import { fullPkPhone, isValidPkMobile } from "../utils/pakistan";
 import { formatPKR } from "../utils/format";
+import { compressImage } from "../utils/image";
 import "../css/DonationModal.css";
 
 const PRESETS = [500, 1000, 2000, 5000, 10000, 25000];
@@ -17,6 +18,7 @@ const DonateModal = ({ isOpen, onClose, onDonate, fund, isProcessing }) => {
   const [proofImage, setProofImage] = useState(null);
   const [proofName, setProofName] = useState("");
   const [copied, setCopied] = useState(false);
+  const [preparing, setPreparing] = useState(false);
 
   if (!isOpen) return null;
 
@@ -33,19 +35,21 @@ const DonateModal = ({ isOpen, onClose, onDonate, fund, isProcessing }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!amount || amount < 50) return toast.error("Please enter a valid amount (min PKR 50).");
     if (!isValidPkMobile(donor.phone)) return toast.error("Enter a valid Pakistani mobile number.");
     if (!proofImage) return toast.error("Please upload your payment screenshot.");
 
+    setPreparing(true);
     const formData = new FormData();
     formData.append("fundId", fund._id);
     formData.append("amount", amount);
     formData.append("fullName", donor.fullName);
     formData.append("email", donor.email);
     formData.append("contactNumber", fullPkPhone(donor.phone));
-    formData.append("proofImage", proofImage);
+    formData.append("proofImage", await compressImage(proofImage));
+    setPreparing(false);
     onDonate(formData);
   };
 
@@ -164,6 +168,8 @@ const DonateModal = ({ isOpen, onClose, onDonate, fund, isProcessing }) => {
                 <label className="upload-zone">
                   <FiUploadCloud />
                   <span>{proofName || "Click to upload your receipt"}</span>
+                  {/* Not `required`: the input is hidden, so the browser can't show
+                      its own "required" bubble — handleSubmit explains instead. */}
                   <input
                     type="file"
                     accept="image/*"
@@ -171,15 +177,16 @@ const DonateModal = ({ isOpen, onClose, onDonate, fund, isProcessing }) => {
                       setProofImage(e.target.files[0]);
                       setProofName(e.target.files[0]?.name || "");
                     }}
-                    required
                   />
                 </label>
               </div>
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isProcessing}>
-            {isProcessing ? "Submitting…" : `Submit Donation${amount ? ` · ${formatPKR(amount)}` : ""}`}
+          <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isProcessing || preparing}>
+            {isProcessing || preparing
+              ? "Submitting…"
+              : `Submit Donation${amount ? ` · ${formatPKR(amount)}` : ""}`}
           </button>
         </form>
       </div>

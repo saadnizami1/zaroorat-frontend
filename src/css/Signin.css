@@ -37,6 +37,7 @@
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--hairline); }
 .auth-form { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 1.6rem; }
 .auth-form .btn { margin-top: 0.4rem; }
+.auth-hint { font-size: 0.8rem; color: var(--text-dim); line-height: 1.45; }
 .auth-toggle { text-align: center; margin-top: 1.6rem; color: var(--text-soft); font-size: 0.95rem; }
 .auth-toggle button { color: var(--green); font-weight: 600; }
 .auth-toggle button:hover { color: var(--green-soft); text-decoration: underline; }

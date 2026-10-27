@@ -3,17 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { AiFillDelete } from "react-icons/ai";
 import { FiPlus } from "react-icons/fi";
 import axios from "axios";
+import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PageHero from "../components/PageHero";
 import CampaignCard from "../components/CampaignCard";
 import Reveal from "../components/Reveal";
 import { CampaignContext } from "../store/campaignStore";
+import { errorMessage } from "../utils/axios";
 import "../css/Fundraisers.css";
 
 const MyFunds = () => {
   const [funds, setFunds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const { apiURL, user } = useContext(CampaignContext);
   const navigate = useNavigate();
 
@@ -23,9 +26,11 @@ const MyFunds = () => {
       setIsLoading(true);
       try {
         const res = await axios.get(`${apiURL}/api/user/my-funds`, { withCredentials: true });
-        if (res.data) setFunds(res.data.createdFunds || []);
+        if (!Array.isArray(res.data?.createdFunds)) throw new Error("Unexpected response");
+        setFunds(res.data.createdFunds);
       } catch (err) {
         console.error("Error fetching my funds:", err);
+        setLoadError(errorMessage(err));
       } finally {
         setIsLoading(false);
       }
@@ -36,18 +41,24 @@ const MyFunds = () => {
   const deleteFund = async (fundId) => {
     try {
       const res = await axios.delete(`${apiURL}/api/fund/fund-list/${fundId}`, { withCredentials: true });
-      if (res.data) setFunds((prev) => prev.filter((f) => f._id !== fundId));
+      if (res.data) {
+        setFunds((prev) => prev.filter((f) => f._id !== fundId));
+        toast.success("Fundraiser deleted.");
+      }
     } catch (error) {
-      console.log("Cannot delete due to error : ", error);
+      toast.error(errorMessage(error, "Couldn't delete the fundraiser."));
     }
   };
 
   const closeFund = async (fundId) => {
     try {
       const res = await axios.put(`${apiURL}/api/fund/fund-list/${fundId}/close`, {}, { withCredentials: true });
-      if (res.data?.fund) setFunds((prev) => prev.map((f) => (f._id === fundId ? res.data.fund : f)));
+      if (res.data?.fund) {
+        setFunds((prev) => prev.map((f) => (f._id === fundId ? res.data.fund : f)));
+        toast.success("Fundraiser closed.");
+      }
     } catch (error) {
-      console.log("Cannot close due to error : ", error);
+      toast.error(errorMessage(error, "Couldn't close the fundraiser."));
     }
   };
 
@@ -66,6 +77,14 @@ const MyFunds = () => {
         <div className="container">
           {isLoading ? (
             <div className="loading-screen"><div className="spinner" /></div>
+          ) : loadError ? (
+            <div className="empty-state">
+              <h3>We couldn't load your fundraisers</h3>
+              <p>{loadError}</p>
+              <button className="btn btn-primary" style={{ marginTop: "1.4rem" }} onClick={() => window.location.reload()}>
+                Try again
+              </button>
+            </div>
           ) : funds.length === 0 ? (
             <div className="empty-state">
               <h3>You haven't created any fundraisers yet</h3>

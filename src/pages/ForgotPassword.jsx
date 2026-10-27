@@ -4,6 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import AuthLayout from "../components/AuthLayout";
 import { CampaignContext } from "../store/campaignStore";
+import { errorMessage } from "../utils/axios";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ const ForgotPassword = () => {
       toast.success("Reset link sent! Check your email.");
       setTimeout(() => navigate("/"), 2200);
     } catch (error) {
-      toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+      toast.error(errorMessage(error));
     } finally {
       setIsLoading(false);
     }

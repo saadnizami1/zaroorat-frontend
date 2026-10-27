@@ -17,7 +17,36 @@ import { CampaignContext } from "../store/campaignStore";
 import { PROVINCE_NAMES, citiesFor } from "../utils/pakistan";
 import { CATEGORY_OPTIONS, formatCategory } from "../utils/categories";
 import { formatPKR } from "../utils/format";
+import { errorMessage } from "../utils/axios";
+import { compressImage } from "../utils/image";
 import "../css/StartFund.css";
+
+// Must match MIN_GOAL in the backend's fundController.
+const MIN_GOAL = 500;
+
+const listWords = (items) =>
+  items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+
+// Shown instead of the form while the user's profile is missing details the
+// server requires for a campaign.
+const ProfileGate = ({ gaps }) => (
+  <div className="sf-content">
+    <h2>One quick step before you start</h2>
+    <p className="sf-help">
+      To keep every campaign genuine, your profile needs your <strong>{listWords(gaps)}</strong>{" "}
+      before you can start a fundraiser. It takes about a minute.
+    </p>
+    <div className="sf-secure-note">
+      <FiShield /> Your CNIC is only seen by our verification team — it's never shown publicly.
+    </div>
+    <div className="sf-actions">
+      <span />
+      <Link to="/profile" className="btn btn-primary">
+        Complete my profile <FiArrowRight />
+      </Link>
+    </div>
+  </div>
+);
 
 const STEPS = [
   { n: 1, label: "Location", icon: <FiMapPin /> },
@@ -47,9 +76,32 @@ export default function StartFund() {
     ifscCode: "",
   });
 
+  // The server only accepts campaigns from users whose profile has a phone,
+  // city and CNIC image — check now instead of failing after all five steps.
+  const [profileGaps, setProfileGaps] = useState([]);
+  const gated = profileGaps.length > 0;
+
   useEffect(() => {
     if (!user) navigate("/signin");
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const res = await axios.get(`${apiURL}/api/user/profile`, { withCredentials: true });
+        const u = res.data?.user || {};
+        const gaps = [];
+        if (!u.fullName?.trim()) gaps.push("full name");
+        if (!u.phone?.trim()) gaps.push("mobile number");
+        if (!u.cityName?.trim()) gaps.push("city");
+        if (!u.cnicImage?.trim()) gaps.push("CNIC image");
+        setProfileGaps(gaps);
+      } catch {
+        /* don't block the form if this check fails — the server re-checks on submit */
+      }
+    })();
+  }, [apiURL, user]);
 
   const cities = useMemo(() => citiesFor(form.province), [form.province]);
 
@@ -75,15 +127,16 @@ export default function StartFund() {
   const back = () => setStep((s) => Math.max(1, s - 1));
 
   const zipOk = form.postcode ? isValidZip(form.postcode, "Pakistan") : false;
+  const goalOk = Number(form.totalAmountRaised) >= MIN_GOAL;
 
   const stepValid = {
     1: form.province && form.cityName && zipOk,
-    2: form.fundraiseTitle && form.fundCategory && form.totalAmountRaised > 0,
+    2: form.fundraiseTitle && form.fundCategory && goalOk,
     3: form.fundraiseStory && form.coverImage,
     4: form.accountHolderName && form.accountNumber && form.bankName && form.ifscCode,
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSending(true);
     const fd = new FormData();
     fd.append("country", "Pakistan");
@@ -94,7 +147,7 @@ export default function StartFund() {
     fd.append("fundCategory", form.fundCategory);
     fd.append("totalAmountRaised", form.totalAmountRaised);
     fd.append("fundraiseStory", form.fundraiseStory);
-    fd.append("coverImage", form.coverImage);
+    fd.append("coverImage", await compressImage(form.coverImage));
     fd.append("accountHolderName", form.accountHolderName);
     fd.append("accountNumber", form.accountNumber);
     fd.append("bankName", form.bankName);
@@ -110,8 +163,7 @@ export default function StartFund() {
         setTimeout(() => navigate("/myfunds"), 2500);
       })
       .catch((err) => {
-        const msg = err.response?.data?.message || err.response?.data?.msg;
-        toast.error(msg || "Please complete your profile before starting a fundraiser.");
+        toast.error(errorMessage(err, "Couldn't submit your fundraiser. Please try again."));
         setIsSending(false);
       });
   };
@@ -160,7 +212,9 @@ export default function StartFund() {
           </div>
 
           <div className="sf-card">
-            {step === 1 && (
+            {gated && <ProfileGate gaps={profileGaps} />}
+
+            {!gated && step === 1 && (
               <div className="sf-content">
                 <h2>Where is this campaign based?</h2>
                 <p className="sf-help">Zaroorat is built for Pakistan — choose your province and city.</p>
@@ -190,7 +244,7 @@ export default function StartFund() {
               </div>
             )}
 
-            {step === 2 && (
+            {!gated && step === 2 && (
               <div className="sf-content">
                 <h2>Tell us about your cause</h2>
                 <p className="sf-help">A clear title and goal help donors connect instantly.</p>
@@ -208,16 +262,19 @@ export default function StartFund() {
                   </div>
                   <div className="field">
                     <label className="field-label">Goal amount (PKR)</label>
-                    <input className="input" type="number" min="1" name="totalAmountRaised" value={form.totalAmountRaised} onChange={handleChange} placeholder="500000" required />
+                    <input className="input" type="number" min={MIN_GOAL} name="totalAmountRaised" value={form.totalAmountRaised} onChange={handleChange} placeholder="500000" required />
                   </div>
                 </div>
-                {form.totalAmountRaised > 0 && (
+                {form.totalAmountRaised !== "" && !goalOk && (
+                  <span className="sf-error">The minimum goal is {formatPKR(MIN_GOAL)}.</span>
+                )}
+                {goalOk && (
                   <p className="sf-goal-preview">You're aiming to raise <strong>{formatPKR(form.totalAmountRaised)}</strong>.</p>
                 )}
               </div>
             )}
 
-            {step === 3 && (
+            {!gated && step === 3 && (
               <div className="sf-content">
                 <h2>Share the story</h2>
                 <p className="sf-help">Explain who this is for and how donations will help. Honesty builds trust.</p>
@@ -242,7 +299,7 @@ export default function StartFund() {
               </div>
             )}
 
-            {step === 4 && (
+            {!gated && step === 4 && (
               <div className="sf-content">
                 <h2>Where should we send the funds?</h2>
                 <p className="sf-help">After donations are verified, Zaroorat disburses them to this account.</p>
@@ -270,7 +327,7 @@ export default function StartFund() {
               </div>
             )}
 
-            {step === 5 && (
+            {!gated && step === 5 && (
               <div className="sf-content">
                 <h2>Review your campaign</h2>
                 <p className="sf-help">Check everything looks right, then submit for review.</p>
@@ -288,22 +345,24 @@ export default function StartFund() {
               </div>
             )}
 
-            <div className="sf-actions">
-              {step > 1 ? (
-                <button type="button" className="btn btn-ghost" onClick={back}>
-                  <FiArrowLeft /> Back
-                </button>
-              ) : <span />}
-              {step < 5 ? (
-                <button type="button" className="btn btn-primary" onClick={next} disabled={!stepValid[step]}>
-                  Continue <FiArrowRight />
-                </button>
-              ) : (
-                <button type="button" className="btn btn-primary" onClick={handleSubmit} disabled={isSending}>
-                  {isSending ? "Submitting…" : "Submit for review"}
-                </button>
-              )}
-            </div>
+            {!gated && (
+              <div className="sf-actions">
+                {step > 1 ? (
+                  <button type="button" className="btn btn-ghost" onClick={back}>
+                    <FiArrowLeft /> Back
+                  </button>
+                ) : <span />}
+                {step < 5 ? (
+                  <button type="button" className="btn btn-primary" onClick={next} disabled={!stepValid[step]}>
+                    Continue <FiArrowRight />
+                  </button>
+                ) : (
+                  <button type="button" className="btn btn-primary" onClick={handleSubmit} disabled={isSending}>
+                    {isSending ? "Submitting…" : "Submit for review"}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>

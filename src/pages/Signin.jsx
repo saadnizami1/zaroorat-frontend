@@ -1,12 +1,13 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import AuthLayout from "../components/AuthLayout";
 import PhoneInput from "../components/PhoneInput";
 import { CampaignContext } from "../store/campaignStore";
 import { fullPkPhone, isValidPkMobile } from "../utils/pakistan";
+import { errorMessage } from "../utils/axios";
 
 const Signin = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,6 +22,15 @@ const Signin = () => {
 
   const { setUser, apiURL } = useContext(CampaignContext);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // The backend sends people back here as /signin?google=failed when Google
+  // sign-in can't be completed.
+  useEffect(() => {
+    if (searchParams.get("google") !== "failed") return;
+    toast.error("Google sign-in didn't work. Please try again, or use your email and password.");
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const change = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -50,7 +60,7 @@ const Signin = () => {
         setForm({ name: "", email: "", password: "", confirmPassword: "", phone: "" });
         setIsSignUp(false);
       } catch (error) {
-        toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+        toast.error(errorMessage(error));
       } finally {
         setIsSending(false);
       }
@@ -66,7 +76,7 @@ const Signin = () => {
         toast.success("Welcome back!");
         setTimeout(() => navigate("/"), 1200);
       } catch (error) {
-        toast.error(error.response?.data?.message || error.response?.data?.msg || error.message);
+        toast.error(errorMessage(error));
       } finally {
         setIsSending(false);
       }
@@ -110,6 +120,11 @@ const Signin = () => {
         <div className="field">
           <label className="field-label">Password</label>
           <input className="input" type="password" name="password" value={form.password} required onChange={change} placeholder="••••••••" />
+          {isSignUp && (
+            <span className="auth-hint">
+              6–18 characters, with an uppercase letter, a lowercase letter, a number and a symbol.
+            </span>
+          )}
         </div>
 
         {isSignUp && (

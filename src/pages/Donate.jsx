@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   FiMapPin,
   FiShare2,
@@ -18,7 +18,10 @@ import DonateModal from "../components/DonationPayment";
 import { CampaignContext } from "../store/campaignStore";
 import { formatPKR, progressPercent, optimizedImage } from "../utils/format";
 import { formatCategory } from "../utils/categories";
+import { errorMessage } from "../utils/axios";
+import { compressImage } from "../utils/image";
 import "../css/Donate.css";
+import "../css/Fundraisers.css";
 
 const Donate = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -26,6 +29,7 @@ const Donate = () => {
   const [reports, setReports] = useState([]);
   const [supporters, setSupporters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAuthor, setIsAuthor] = useState(false);
 
@@ -41,27 +45,37 @@ const Donate = () => {
   useEffect(() => {
     (async () => {
       setIsLoading(true);
+      setLoadError("");
       try {
         const res = await axios.get(`${apiURL}/api/fund/fund-list/${fundId}`);
-        if (res.data) {
-          const ownerId = res.data.fund?.userId?._id;
-          if (user?._id && ownerId && user._id === ownerId) setIsAuthor(true);
-          setFund(res.data.fund);
-          setReports(res.data.reports || []);
-        }
+        if (!res.data?.fund) throw new Error("Unexpected response");
+        const ownerId = res.data.fund.userId?._id;
+        setIsAuthor(Boolean(user?._id && ownerId && user._id === ownerId));
+        setFund(res.data.fund);
+        setReports(res.data.reports || []);
       } catch (error) {
-        toast.error("Failed to load campaign details");
+        // 404 = removed, paused or closed; anything else = couldn't reach the server.
+        setLoadError(error.response?.status === 404 ? "unavailable" : errorMessage(error));
       } finally {
         setIsLoading(false);
       }
     })();
   }, [apiURL, fundId, user]);
 
+  // Campaign title in the browser tab, history and search results.
+  useEffect(() => {
+    if (!fund?.fundraiseTitle) return;
+    document.title = `${fund.fundraiseTitle} | Zaroorat`;
+    return () => {
+      document.title = "Zaroorat";
+    };
+  }, [fund?.fundraiseTitle]);
+
   useEffect(() => {
     (async () => {
       try {
         const res = await axios.get(`${apiURL}/api/fund/donar-by-fundId/${fundId}`);
-        setSupporters(res.data?.donars || res.data?.donations || res.data?.supporters || []);
+        setSupporters(res.data?.donators || []);
       } catch {
         /* supporters are optional */
       }
@@ -83,7 +97,7 @@ const Donate = () => {
         setTimeout(() => navigate("/"), 4000);
       }
     } catch (error) {
-      toast.error("Donation failed. Please try again.");
+      toast.error(errorMessage(error, "Donation failed. Please try again."));
     } finally {
       setIsProcessing(false);
     }
@@ -113,11 +127,11 @@ const Donate = () => {
 
   const handleReportSubmit = async (e) => {
     e.preventDefault();
+    setIsProcessing(true);
     const formData = new FormData();
     formData.append("fundId", fundId);
     formData.append("description", newReportDesc);
-    formData.append("image", newReportImage);
-    setIsProcessing(true);
+    if (newReportImage) formData.append("image", await compressImage(newReportImage));
     try {
       const res = await axios.post(`${apiURL}/api/fund/fund-report`, formData, {
         withCredentials: true,
@@ -125,15 +139,16 @@ const Donate = () => {
       });
       if (res.data) {
         toast.success("Update posted!");
-        window.location.reload();
+        if (res.data.report) setReports((prev) => [res.data.report, ...prev]);
+        setNewReportDesc("");
+        setNewReportImage(null);
+        setShowReportForm(false);
       }
     } catch (error) {
-      toast.error("Failed to post update.");
+      // Keep what they typed so they can try again.
+      toast.error(errorMessage(error, "Failed to post update."));
     } finally {
       setIsProcessing(false);
-      setNewReportDesc("");
-      setNewReportImage(null);
-      setShowReportForm(false);
     }
   };
 
@@ -147,6 +162,40 @@ const Donate = () => {
       <div className="page">
         <Navbar />
         <div className="loading-screen"><div className="spinner" /></div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!fund) {
+    return (
+      <div className="page">
+        <Navbar />
+        <main className="listing">
+          <div className="container">
+            <div className="empty-state">
+              {loadError === "unavailable" ? (
+                <>
+                  <h3>This campaign isn't available</h3>
+                  <p>It may have been completed, closed by its organiser, or paused for review.</p>
+                </>
+              ) : (
+                <>
+                  <h3>We couldn't load this campaign</h3>
+                  <p>{loadError || "Please try again in a moment."}</p>
+                </>
+              )}
+              <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap", marginTop: "1.4rem" }}>
+                {loadError !== "unavailable" && (
+                  <button className="btn btn-primary" onClick={() => window.location.reload()}>
+                    Try again
+                  </button>
+                )}
+                <Link to="/fundraisers" className="btn btn-ghost">Browse other campaigns</Link>
+              </div>
+            </div>
+          </div>
+        </main>
         <Footer />
       </div>
     );

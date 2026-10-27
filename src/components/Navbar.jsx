@@ -29,18 +29,19 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await axios.post(`${apiURL}/api/auth/logout`, {}, { withCredentials: true });
-      toast.success(res?.data?.message || "Logged out");
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      setDrawerOpen(false);
-      setTimeout(() => {
-        navigate("/");
-        window.location.reload();
-      }, 900);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Logout failed");
+      await axios.post(`${apiURL}/api/auth/logout`, {}, { withCredentials: true });
+    } catch {
+      // Still sign out locally — never leave someone stuck "logged in"
+      // just because the server couldn't be reached.
     }
+    toast.success("Logged out");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setDrawerOpen(false);
+    setTimeout(() => {
+      navigate("/");
+      window.location.reload();
+    }, 900);
   };
 
   const initials = (user?.fullName || "U").trim().charAt(0).toUpperCase();

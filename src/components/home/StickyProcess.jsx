@@ -5,7 +5,7 @@ const STEPS = [
   {
     icon: <FiSearch />,
     title: "Start or find a cause",
-    desc: "Launch your own fundraiser in minutes, or browse hundreds of verified campaigns for the cause closest to your heart.",
+    desc: "Launch your own fundraiser in minutes, or browse verified campaigns for the cause closest to your heart.",
   },
   {
     icon: <FiUploadCloud />,

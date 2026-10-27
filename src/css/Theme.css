@@ -467,6 +467,21 @@ input, textarea, select { font-family: inherit; font-size: 1rem; color: var(--te
 .select option { background: #fff; color: var(--text); }
 .textarea { resize: vertical; min-height: 140px; line-height: 1.6; }
 
+/* File picker shown as a dashed drop zone (donation proof, CNIC). */
+.upload-zone {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--glass-border-2);
+  background: var(--glass);
+  color: var(--text-soft); font-weight: 500; font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+.upload-zone:hover { border-color: var(--m-700); color: var(--m-700); }
+.upload-zone svg { font-size: 1.3rem; flex-shrink: 0; color: var(--green); }
+.upload-zone input { display: none; }
+.upload-zone span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ============================================================
    LOADING / SKELETON
    ============================================================ */

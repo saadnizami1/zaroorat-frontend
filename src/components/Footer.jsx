@@ -1,11 +1,40 @@
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiShield } from "react-icons/fi";
+import axios from "axios";
 import toast from "react-hot-toast";
+import { CampaignContext } from "../store/campaignStore";
+import { errorMessage } from "../utils/axios";
 import "../css/Footer.css";
 
 const logo = "/ZarooratTransparent.png";
 
 const Footer = () => {
+  const { apiURL } = useContext(CampaignContext);
+  const [subscribing, setSubscribing] = useState(false);
+
+  // Sign-ups are delivered to the team inbox through the contact endpoint.
+  const subscribe = async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const email = new FormData(form).get("email")?.toString().trim();
+    if (!email) return;
+    setSubscribing(true);
+    try {
+      await axios.post(`${apiURL}/api/contact`, {
+        fullName: "Newsletter sign-up",
+        email,
+        message: "Please add me to the Zaroorat email updates list.",
+      });
+      form.reset();
+      toast.success("You're subscribed — thank you for joining us.");
+    } catch (error) {
+      toast.error(errorMessage(error, "Couldn't subscribe you right now. Please try again."));
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   return (
     <footer className="site-footer">
       <div className="container">
@@ -50,16 +79,9 @@ const Footer = () => {
           <div className="footer-news">
             <h4>Stay in the loop</h4>
             <p>Stories of impact and new causes, straight to your inbox.</p>
-            <form
-              className="news-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                e.currentTarget.reset();
-                toast.success("You're subscribed — thank you for joining us.");
-              }}
-            >
-              <input type="email" placeholder="you@email.com" aria-label="Email address" required />
-              <button type="submit" aria-label="Subscribe">
+            <form className="news-form" onSubmit={subscribe}>
+              <input type="email" name="email" placeholder="you@email.com" aria-label="Email address" required />
+              <button type="submit" aria-label="Subscribe" disabled={subscribing}>
                 <FiArrowRight />
               </button>
             </form>

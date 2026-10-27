@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
+import CanonicalUrl from "./components/CanonicalUrl";
 import PageLoader from "./components/PageLoader";
 import CustomCursor from "./components/CustomCursor";
 
@@ -38,6 +39,7 @@ const App = () => {
   return (
     <Router>
       <ScrollToTop />
+      <CanonicalUrl />
       <CustomCursor />
       <div className="grain" aria-hidden="true" />
       <Toaster
