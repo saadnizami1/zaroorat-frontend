@@ -15,6 +15,14 @@ const DEPARTMENTS = [
   { name: "Customer Support", head: "Ahmad Adnan", members: ["Usman Nizai", "Irtaza Khan", "Danyal Zaka"] },
   { name: "Public Engagement", head: "Hassan Ali", members: ["Musa Raza", "Azan Khurram", "Danyyal Niazi"] },
   { name: "Web Operations", head: "Saad Nizami", members: ["Salaar Farrukh", "Ibrahim Malik"] },
+  {
+    name: "Campaign Analysts",
+    head: "Ayeza Adnan",
+    members: [
+      "Uzma Firdous", "Anas Arshad", "Arsal Ahsan", "Fatima Hanif", "Junaid Akram", "Ateeb Sohail",
+      "Muhammad Zayed", "Abeeha Awais", "Khizer Faisal", "Muhammad Mohsin", "Muzamil", "Ayaan Shahid",
+    ],
+  },
 ];
 
 const VALUES = [
@@ -67,8 +75,8 @@ const OurTeam = () => {
             message, and obsess over getting help to the right hands.
           </p>
           <div className="team-stats">
-            <div className="team-stat"><strong>15+</strong><span>People</span></div>
-            <div className="team-stat"><strong>3</strong><span>Departments</span></div>
+            <div className="team-stat"><strong>20+</strong><span>People</span></div>
+            <div className="team-stat"><strong>4</strong><span>Departments</span></div>
             <div className="team-stat"><strong>100%</strong><span>Pakistan-based</span></div>
           </div>
         </div>
