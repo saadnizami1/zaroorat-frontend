@@ -162,7 +162,6 @@ const Donate = () => {
   const goal = fund?.totalAmountRaised || 0;
   const pct = progressPercent(raised, goal);
   const team = isTeamCase(fund) ? fund.teamCase : null;
-  const photo = team?.photo;
   // Team cases are stored under the admin account, so name the person running them instead.
   const organizer = team?.organizer ? { fullName: team.organizer } : fund?.userId;
 
@@ -224,29 +223,7 @@ const Donate = () => {
               )}
             </div>
             {team && (
-              <p className="donate-photo-note">
-                {TEAM_CASE_PHOTO_NOTE}
-                {photo?.sourceUrl && (
-                  <>
-                    {" "}Photo:{" "}
-                    <a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer">
-                      {photo.title || "source"}
-                    </a>
-                    {photo.creator && ` by ${photo.creator}`}
-                    {photo.license && (
-                      <>
-                        {", "}
-                        {photo.licenseUrl ? (
-                          <a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer">{photo.license}</a>
-                        ) : (
-                          photo.license
-                        )}
-                      </>
-                    )}
-                    .
-                  </>
-                )}
-              </p>
+              <p className="donate-photo-note">{TEAM_CASE_PHOTO_NOTE}</p>
             )}
 
             <div className="donate-head">

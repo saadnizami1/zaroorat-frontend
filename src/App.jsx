@@ -33,6 +33,7 @@ const Zakat = lazy(() => import("./pages/Zakat"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Cookies = lazy(() => import("./pages/Cookies"));
+const PhotoCredits = lazy(() => import("./pages/PhotoCredits"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 
 const App = () => {
@@ -88,6 +89,7 @@ const App = () => {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/cookies" element={<Cookies />} />
+          <Route path="/photo-credits" element={<PhotoCredits />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Suspense>

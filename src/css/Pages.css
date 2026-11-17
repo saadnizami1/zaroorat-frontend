@@ -140,3 +140,6 @@
 
 @media (max-width: 820px) { .contact-grid, .zakat-grid { grid-template-columns: 1fr; } .zakat-calc { position: static; } }
 @media (max-width: 520px) { .contact-form .two { grid-template-columns: 1fr; } }
+
+.photo-credits { display: grid; gap: 0.7rem; }
+.photo-credits li { line-height: 1.6; }
