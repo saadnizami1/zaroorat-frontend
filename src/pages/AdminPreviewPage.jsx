@@ -9,7 +9,9 @@ import { CampaignContext } from "../store/campaignStore";
 import { formatPKR, progressPercent } from "../utils/format";
 import { formatCategory } from "../utils/categories";
 import { errorMessage } from "../utils/axios";
+import { isTeamCase, formatVerifiedDate } from "../utils/teamCase";
 import "../css/Dashboard.css";
+import "../css/Donate.css";
 
 const AdminCampaignPreview = () => {
   const { apiURL, user } = useContext(CampaignContext);
@@ -38,6 +40,7 @@ const AdminCampaignPreview = () => {
   } = campaign;
   const { fullName, email, phone, cityName: userCity, cnicImage } = userId || {};
   const pct = progressPercent(donationAmount, totalAmountRaised);
+  const team = isTeamCase(campaign) ? campaign.teamCase : null;
 
   const handleDecision = async (approve) => {
     if (
@@ -83,6 +86,30 @@ const AdminCampaignPreview = () => {
                 <p className="preview-loc">{[cityName, country].filter(Boolean).join(", ")}</p>
               )}
               <p className="preview-story">{fundraiseStory}</p>
+
+              {team && (
+                <>
+                  <div className="donate-verified">
+                    <h2><FiCheck /> Field-team case — visited {formatVerifiedDate(team.verifiedOn)}</h2>
+                    <p>{team.verificationNote}</p>
+                    <p className="verified-written">
+                      Approving publishes this case to donors as &ldquo;Verified by the Zaroorat team&rdquo;. Only
+                      approve once you have seen the field team&rsquo;s records for it.
+                    </p>
+                  </div>
+                  {team.costBreakdown?.length > 0 && (
+                    <div className="donate-breakdown">
+                      <h2>How the money will be used</h2>
+                      <ul>
+                        {team.costBreakdown.map((item, i) => (
+                          <li key={i}><span>{item.label}</span><span>{formatPKR(item.amount)}</span></li>
+                        ))}
+                        <li className="breakdown-total"><span>Total needed</span><span>{formatPKR(totalAmountRaised)}</span></li>
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <aside className="preview-aside">

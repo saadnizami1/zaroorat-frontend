@@ -38,6 +38,30 @@
 }
 .donate-story p { color: var(--text-soft); line-height: 1.85; white-space: pre-line; font-size: 1.02rem; }
 
+.donate-photo-note { margin-top: 0.6rem; font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+.donate-photo-note a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+.donate-breakdown { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--hairline); }
+.donate-breakdown h2 { font-size: 1.3rem; margin-bottom: 1rem; }
+.donate-breakdown ul { list-style: none; padding: 0; margin: 0; border: 1px solid var(--hairline); }
+.donate-breakdown li {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.75rem 1rem; font-size: 0.95rem; color: var(--text-soft);
+  border-bottom: 1px solid var(--hairline);
+}
+.donate-breakdown li span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text); }
+.donate-breakdown .breakdown-total { border-bottom: 0; background: var(--m-50); font-weight: 600; color: var(--text); }
+
+.donate-verified {
+  margin-top: 2rem; padding: 1.3rem 1.5rem;
+  background: var(--m-50); border: 1px solid var(--m-150);
+}
+.donate-verified h2 { font-size: 1.1rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+.donate-verified h2 svg { color: var(--green); flex-shrink: 0; }
+.donate-verified p { color: var(--text-soft); line-height: 1.7; font-size: 0.95rem; }
+.donate-verified .verified-date { color: var(--text); font-weight: 500; }
+.donate-verified .verified-written { margin-top: 0.6rem; font-size: 0.88rem; color: var(--text-dim); }
+
 .donate-author-box {
   margin-top: 2rem;
   background: var(--glass);

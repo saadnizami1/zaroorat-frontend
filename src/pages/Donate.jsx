@@ -20,6 +20,12 @@ import { formatPKR, progressPercent, optimizedImage } from "../utils/format";
 import { formatCategory } from "../utils/categories";
 import { errorMessage } from "../utils/axios";
 import { compressImage } from "../utils/image";
+import {
+  isTeamCase,
+  formatVerifiedDate,
+  TEAM_CASE_STORY_NOTE,
+  TEAM_CASE_PHOTO_NOTE,
+} from "../utils/teamCase";
 import "../css/Donate.css";
 import "../css/Fundraisers.css";
 
@@ -156,6 +162,8 @@ const Donate = () => {
   const goal = fund?.totalAmountRaised || 0;
   const pct = progressPercent(raised, goal);
   const organizer = fund?.userId;
+  const team = isTeamCase(fund) ? fund.teamCase : null;
+  const photo = team?.photo;
 
   if (isLoading) {
     return (
@@ -214,6 +222,31 @@ const Donate = () => {
                 <span className="donate-cat">{formatCategory(fund.fundCategory)}</span>
               )}
             </div>
+            {team && (
+              <p className="donate-photo-note">
+                {TEAM_CASE_PHOTO_NOTE}
+                {photo?.sourceUrl && (
+                  <>
+                    {" "}Photo:{" "}
+                    <a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer">
+                      {photo.title || "source"}
+                    </a>
+                    {photo.creator && ` by ${photo.creator}`}
+                    {photo.license && (
+                      <>
+                        {", "}
+                        {photo.licenseUrl ? (
+                          <a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer">{photo.license}</a>
+                        ) : (
+                          photo.license
+                        )}
+                      </>
+                    )}
+                    .
+                  </>
+                )}
+              </p>
+            )}
 
             <div className="donate-head">
               {(fund?.cityName || fund?.country) && (
@@ -243,6 +276,36 @@ const Donate = () => {
               <h2>About this fundraiser</h2>
               <p>{fund?.fundraiseStory}</p>
             </div>
+
+            {team?.costBreakdown?.length > 0 && (
+              <div className="donate-breakdown">
+                <h2>How the money will be used</h2>
+                <ul>
+                  {team.costBreakdown.map((item, i) => (
+                    <li key={i}>
+                      <span>{item.label}</span>
+                      <span>{formatPKR(item.amount)}</span>
+                    </li>
+                  ))}
+                  <li className="breakdown-total">
+                    <span>Total needed</span>
+                    <span>{formatPKR(goal)}</span>
+                  </li>
+                </ul>
+              </div>
+            )}
+
+            {team && (
+              <div className="donate-verified">
+                <h2><FiCheckCircle /> Verified by the Zaroorat team</h2>
+                <p>
+                  {team.verificationNote}
+                  {" "}
+                  <span className="verified-date">Visited on {formatVerifiedDate(team.verifiedOn)}.</span>
+                </p>
+                <p className="verified-written">{TEAM_CASE_STORY_NOTE}</p>
+              </div>
+            )}
 
             {/* Author: post an update */}
             {isAuthor && (
@@ -343,7 +406,9 @@ const Donate = () => {
             </div>
 
             <div className="donate-trust">
-              <div className="trust-row"><FiCheckCircle /> Reviewed & approved campaign</div>
+              <div className="trust-row">
+                <FiCheckCircle /> {team ? "Visited & verified by our field team" : "Reviewed & approved campaign"}
+              </div>
               <div className="trust-row"><FiClock /> Funds released after verification</div>
               <div className="trust-row"><FiUsers /> Backed by {supporters.length || fund?.donationCount || 0}+ supporters</div>
             </div>

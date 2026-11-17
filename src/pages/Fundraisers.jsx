@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { AiFillDelete } from "react-icons/ai";
+import { FiCheckCircle } from "react-icons/fi";
 import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -12,6 +13,7 @@ import { CampaignContext } from "../store/campaignStore";
 import { formatCategory } from "../utils/categories";
 import { readCache, writeCache } from "../utils/sessionCache";
 import { errorMessage } from "../utils/axios";
+import { isTeamCase } from "../utils/teamCase";
 import "../css/Fundraisers.css";
 
 const CACHE_KEY = "funds:";
@@ -147,6 +149,17 @@ const Fundraisers = () => {
           ) : (
             <>
               <p className="listing-count">{funds.length} active campaign{funds.length !== 1 ? "s" : ""}</p>
+              {funds.some(isTeamCase) && (
+                <p className="listing-note">
+                  <FiCheckCircle />
+                  <span>
+                    Campaigns marked <strong>Verified</strong> were visited by our field team, who checked the
+                    family&rsquo;s documents in person. Their stories are written by our team and volunteers from
+                    the family&rsquo;s own words, as many of the families we help cannot read or write, and their
+                    photos are representative images to protect the family&rsquo;s privacy.
+                  </span>
+                </p>
+              )}
               <div className="campaign-grid">
                 {currentFunds.map((f, i) => (
                   <Reveal key={f._id} delay={(i % 4) + 1}>

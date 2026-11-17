@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { FiMapPin, FiUsers } from "react-icons/fi";
+import { FiMapPin, FiUsers, FiCheckCircle } from "react-icons/fi";
 import { formatPKR, progressPercent, optimizedImage } from "../utils/format";
 import { formatCategory } from "../utils/categories";
+import { isTeamCase } from "../utils/teamCase";
 import "../css/CampaignCard.css";
 
 /**
@@ -27,6 +28,9 @@ const CampaignCard = ({ fund, topRight = null, footer = null, eager = false }) =
           />
           {fund.fundCategory && (
             <span className="ccard-cat">{formatCategory(fund.fundCategory)}</span>
+          )}
+          {isTeamCase(fund) && (
+            <span className="ccard-verified"><FiCheckCircle /> Verified</span>
           )}
         </Link>
         {topRight && <div className="ccard-top-right">{topRight}</div>}

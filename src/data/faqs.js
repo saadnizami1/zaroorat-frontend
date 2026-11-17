@@ -26,6 +26,10 @@ export const FAQ_GROUPS = [
     group: "Fundraising",
     items: [
       {
+        q: "Who writes the stories on campaigns marked “Verified”?",
+        a: "Our team and volunteers. Many of the families we help cannot read or write, so a field volunteer visits them at home, checks their documents (hospital papers, bills, fee slips and so on) and writes up their story in their own words. To protect the family's privacy, these campaigns use a representative photo instead of pictures of the family.",
+      },
+      {
         q: "How do I start a fundraiser?",
         a: "Sign in, click “Start a Fundraiser”, and complete the short guided form — your province and city, your cause, a goal amount, a cover photo, and your bank payout details. Your campaign is submitted for review and goes live once approved.",
       },
