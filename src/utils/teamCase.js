@@ -12,7 +12,6 @@ export const isTeamCase = (fund) => Boolean(fund?.teamCase?.verifiedOn);
 export const TEAM_CASE_STORY_NOTE =
   "This story was written by our team from the family's own words, as many of the families we help cannot read or write.";
 
-export const TEAM_CASE_PHOTO_NOTE = "Representative image — the family's privacy is protected.";
 
 export const formatVerifiedDate = (iso) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });

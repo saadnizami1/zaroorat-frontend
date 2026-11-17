@@ -24,7 +24,6 @@ import {
   isTeamCase,
   formatVerifiedDate,
   TEAM_CASE_STORY_NOTE,
-  TEAM_CASE_PHOTO_NOTE,
 } from "../utils/teamCase";
 import "../css/Donate.css";
 import "../css/Fundraisers.css";
@@ -222,9 +221,6 @@ const Donate = () => {
                 <span className="donate-cat">{formatCategory(fund.fundCategory)}</span>
               )}
             </div>
-            {team && (
-              <p className="donate-photo-note">{TEAM_CASE_PHOTO_NOTE}</p>
-            )}
 
             <div className="donate-head">
               {(fund?.cityName || fund?.country) && (
