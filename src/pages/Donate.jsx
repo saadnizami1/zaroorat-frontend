@@ -161,9 +161,10 @@ const Donate = () => {
   const raised = fund?.donationAmount || 0;
   const goal = fund?.totalAmountRaised || 0;
   const pct = progressPercent(raised, goal);
-  const organizer = fund?.userId;
   const team = isTeamCase(fund) ? fund.teamCase : null;
   const photo = team?.photo;
+  // Team cases are stored under the admin account, so name the person running them instead.
+  const organizer = team?.organizer ? { fullName: team.organizer } : fund?.userId;
 
   if (isLoading) {
     return (

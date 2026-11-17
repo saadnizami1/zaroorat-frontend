@@ -4,6 +4,7 @@
 //   verifiedOn        ISO date of the home visit
 //   verificationNote  what the team saw ("Our field team visited … and saw …")
 //   costBreakdown     [{ label, amount }] adding up to the goal
+//   organizer         name shown as "Organised by" (the fund's owner is the admin account)
 //   photo             { title, creator, license, licenseUrl, sourceUrl } for
 //                     the representative cover image
 export const isTeamCase = (fund) => Boolean(fund?.teamCase?.verifiedOn);
