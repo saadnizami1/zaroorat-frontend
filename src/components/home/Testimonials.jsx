@@ -9,35 +9,30 @@ const CASES = [
     text: "ملتان کے رکشہ ڈرائیور غلام رسول کے گردے ناکارہ ہو چکے ہیں۔ جنوری میں مفت علاج کی باری آنے تک انہیں ہر ہفتے ایک اضافی ڈائلیسس کی ضرورت ہے۔ ہماری رضاکار نے گھر جا کر ڈائلیسس کارڈ، ڈاکٹر کا نسخہ اور سینٹر کی رسیدیں خود دیکھیں۔",
     name: "Ghulam Rasool",
     city: "Multan",
-    verified: "Mehwish Tariq, field volunteer · 2 Nov 2026",
   },
   {
     lang: "en",
     text: "Aiman, an orphan in Lahore, scored 1,010 in her matric exams and wants to become a doctor, but her board fee and MDCAT preparation are out of reach. Our volunteer saw her result card, college enrolment slip and the academy's fee letter at her home.",
     name: "Aiman",
     city: "Lahore",
-    verified: "Hira Saleem, education volunteer · 12 Nov 2026",
   },
   {
     lang: "sd",
     text: "حيدرآباد جي 64 سالن جي زبيده جي ٻنهي اکين ۾ موتيو آهي ۽ هن جي نظر گهٽجي رهي آهي. هوءَ رليون سبي پنهنجي ٻن يتيم پوٽن جو پيٽ پالي ٿي، پر هاڻي ٽانڪا به نٿي ڏسي سگهي. اسان جي رضاڪار سندس گهر وڃي اکين جي ڊاڪٽر جي رپورٽ ۽ اسپتال جو خرچ پاڻ ڏٺو.",
     name: "Zubaida",
     city: "Hyderabad",
-    verified: "Farhan Memon, volunteer coordinator · 21 Oct 2026",
   },
   {
     lang: "ur",
     text: "گوجرانوالہ کی نصرت کے شوہر مارچ میں انتقال کر گئے۔ اب وہ اکیلے چار بچوں کو پال رہی ہیں اور اپنے پیروں پر کھڑے ہونے تک انہیں چھ ماہ کے بنیادی راشن کی ضرورت ہے۔ ہماری رضاکار نے ڈیتھ سرٹیفکیٹ اور کریانے کی دکان کا ادھار ریکارڈ خود دیکھا۔",
     name: "Nusrat",
     city: "Gujranwala",
-    verified: "Rabia Javed, field volunteer · 6 Nov 2026",
   },
   {
     lang: "en",
     text: "The solar pump that gave water to 60 families in a village near Mithi has broken down, and women now walk for hours to a distant well. Our volunteer met the village elders, saw the broken pump and got a technician's written repair estimate.",
     name: "Village near Mithi",
     city: "Tharparkar",
-    verified: "Dileep Kumar, field volunteer · 10 Oct 2026",
   },
 ];
 
@@ -64,7 +59,6 @@ const Testimonials = () => {
                   <span>
                     <strong>{c.name}</strong>
                     <span className="testi-city">{c.city}, Pakistan</span>
-                    <span className="testi-verified">Verified by {c.verified}</span>
                   </span>
                 </div>
               </Reveal>

@@ -509,7 +509,6 @@
 .testi-avatar { width: 42px; height: 42px; display: grid; place-items: center; font-weight: 700; color: #fff; background: var(--m-700); }
 .testi-author strong { display: block; color: var(--text); }
 .testi-city { font-size: 0.85rem; color: var(--text-dim); }
-.testi-verified { display: block; margin-top: 0.15rem; font-size: 0.78rem; color: var(--m-700); }
 
 /* =========================================================
    HOME FAQ
