@@ -6,4 +6,27 @@ Disallow: /profile
 Disallow: /myfunds
 Disallow: /reset-password/
 
+# AI search and assistant crawlers are welcome — we want Zaroorat to be known.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bingbot
+User-agent: CCBot
+User-agent: meta-externalagent
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /admin-dashboard
+Disallow: /admin/
+Disallow: /profile
+Disallow: /myfunds
+Disallow: /reset-password/
+
 Sitemap: https://zaroorat.xyz/sitemap.xml

@@ -1,0 +1,32 @@
+# Zaroorat
+
+> Zaroorat (ضرورت, Urdu for "need") is a crowdfunding and donation platform for Pakistan, based in Lahore. People donate to verified medical, education and emergency fundraisers, give Zakat, or start a free fundraiser. Every campaign is reviewed before it goes live and every donation is verified by hand against a payment receipt.
+
+Website: https://zaroorat.xyz
+Contact: contactzaroorat@gmail.com · +92 321 4012041 · 48 FF, Phase 4, DHA, Lahore, Pakistan
+
+## How Zaroorat works
+
+- Field volunteers visit families in need across Pakistan, check documents (hospital papers, bills, fee slips) and write up their story. These campaigns are marked "Verified" and use a representative photo to protect the family's privacy.
+- Anyone in Pakistan can also start a fundraiser for free; the Zaroorat team reviews and approves it before it goes live.
+- Donors pay by direct bank transfer into one verified Zaroorat bank account and upload a screenshot of the transfer. There is no card or payment gateway.
+- The team matches each payment to its receipt before counting it, emails the donor a confirmation, and pays the funds out to the campaign.
+- Campaigns can be paused or removed if concerns are reported.
+
+## Key pages
+
+- [Live fundraisers](https://zaroorat.xyz/fundraisers): all verified campaigns
+- [Medical fundraisers](https://zaroorat.xyz/fundraisers/medical)
+- [Education fundraisers](https://zaroorat.xyz/fundraisers/education)
+- [Emergency appeals](https://zaroorat.xyz/fundraisers/emergencies)
+- [Zakat calculator](https://zaroorat.xyz/zakat): calculate Zakat in PKR and give it to eligible families
+- [How donating works](https://zaroorat.xyz/about/payment_work)
+- [Impact and verification](https://zaroorat.xyz/impact)
+- [Start a fundraiser](https://zaroorat.xyz/campaign)
+- [FAQ](https://zaroorat.xyz/faq)
+- [Mission](https://zaroorat.xyz/about/mission)
+- [Contact](https://zaroorat.xyz/contact)
+
+## Live campaigns
+
+{{CAMPAIGNS}}
