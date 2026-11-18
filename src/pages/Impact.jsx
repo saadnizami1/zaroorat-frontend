@@ -8,9 +8,9 @@ import Reveal from "../components/Reveal";
 import "../css/Pages.css";
 
 const TILES = [
-  { value: 14, prefix: "PKR ", suffix: "M", format: "plain", label: "Raised for verified causes" },
+  { value: 1.85, decimals: 2, prefix: "PKR ", suffix: "M+", format: "plain", label: "Raised for verified causes" },
   { value: 60, suffix: "+", format: "plain", label: "Families directly helped" },
-  { value: 850, suffix: "+", format: "plain", label: "Donors who gave with confidence" },
+  { value: 250, suffix: "+", format: "plain", label: "Donors who gave with confidence" },
   { value: 100, suffix: "%", format: "plain", label: "Payments manually verified" },
 ];
 
