@@ -1,99 +1,101 @@
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { FiMapPin, FiArrowRight } from "react-icons/fi";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
+import { CampaignContext } from "../store/campaignStore";
+import { formatCategory } from "../utils/categories";
+import { formatPKR, optimizedImage, progressPercent } from "../utils/format";
+import { readCache, writeCache } from "../utils/sessionCache";
 import "../css/Pages.css";
 
-const STORIES = [
-  {
-    img: "/CFund_4.jpg",
-    cat: "Medical",
-    title: "A second chance at life for Ahmed",
-    text: "Diagnosed with a serious heart condition, Ahmed's family turned to Zaroorat. In nine days, 31 verified donors funded his surgery in full.",
-    raised: "PKR 240,000 raised",
-    city: "Lahore",
-  },
-  {
-    img: "/CFund_5.jpg",
-    cat: "Education",
-    title: "22 children, one full year of school",
-    text: "A community campaign covered tuition, uniforms and books for 22 students in a low-income neighbourhood — keeping them in classrooms.",
-    raised: "PKR 165,000 raised",
-    city: "Karachi",
-  },
-  {
-    img: "/CFund_6.jpg",
-    cat: "Emergencies",
-    title: "Rebuilding after the floods",
-    text: "When monsoon floods displaced several families, donors rallied to provide shelter, clean water and essential supplies within days.",
-    raised: "PKR 210,000 raised",
-    city: "Sindh",
-  },
-  {
-    img: "/CFund_7.jpg",
-    cat: "Family",
-    title: "Keeping a family on their feet",
-    text: "After losing their sole earner, a family received support for rent and groceries while they got back on their feet with dignity.",
-    raised: "PKR 95,000 raised",
-    city: "Rawalpindi",
-  },
-  {
-    img: "/Home_2.jpg",
-    cat: "Islamic Causes",
-    title: "A clean-water well that serves hundreds",
-    text: "Sadaqah-e-Jariyah in action — a hand pump and filtration system now provides safe drinking water to an entire village.",
-    raised: "PKR 70,000 raised",
-    city: "Multan",
-  },
-  {
-    img: "/Home_3.jpg",
-    cat: "Medical",
-    title: "Eyesight restored for Bibi Zainab",
-    text: "A simple cataract operation that her family couldn't afford was funded in 48 hours, restoring her independence.",
-    raised: "PKR 45,000 raised",
-    city: "Peshawar",
-  },
-];
+// Same key as the Fundraisers page, so the list is shared between them.
+const CACHE_KEY = "funds:";
+const SHOWN = 6;
+
+const pickRandom = (list, n) => {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, n);
+};
+
+const excerpt = (fund) => {
+  const text = fund.teamCase?.summary || fund.fundraiseStory || "";
+  return text.length > 180 ? `${text.slice(0, 177).trimEnd()}…` : text;
+};
 
 const Stories = () => {
+  const { apiURL } = useContext(CampaignContext);
+  const [stories, setStories] = useState(() => pickRandom(readCache(CACHE_KEY) || [], SHOWN));
+  const [isLoading, setIsLoading] = useState(stories.length === 0);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get(`${apiURL}/api/fund/fund-list?search=`);
+        if (!Array.isArray(res.data?.funds)) throw new Error("Unexpected response");
+        writeCache(CACHE_KEY, res.data.funds);
+        // Keep the cached pick if there was one, so cards don't reshuffle mid-view.
+        setStories((prev) => (prev.length ? prev : pickRandom(res.data.funds, SHOWN)));
+      } catch (error) {
+        console.error("Error fetching stories: ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [apiURL]);
+
   return (
     <div className="page">
       <Navbar />
       <PageHero
-        eyebrow="Success stories"
+        eyebrow="Stories"
         title="Real people. Real impact."
-        subtitle="Behind every campaign is a life changed. These are just a few of the causes our community has made possible."
+        subtitle="Behind every campaign is a family our team has visited. Here are a few of the people you can help today."
       />
 
       <section className="content">
         <div className="container">
-          <div className="stories-grid">
-            {STORIES.map((s, i) => (
-              <Reveal key={s.title} delay={(i % 3) + 1}>
-                <article className="story-card">
-                  <div className="story-media">
-                    <img src={s.img} alt={s.title} loading="lazy" />
-                    <span className="story-raised">{s.raised}</span>
-                  </div>
-                  <div className="story-body">
-                    <span className="story-cat">{s.cat}</span>
-                    <h3 className="story-title">{s.title}</h3>
-                    <p className="story-text">{s.text}</p>
-                    <div className="story-foot">
-                      <FiMapPin /> {s.city}
-                      <span className="badge badge-green">Funded</span>
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+          {isLoading ? (
+            <p style={{ textAlign: "center" }}>Loading stories…</p>
+          ) : stories.length === 0 ? (
+            <p style={{ textAlign: "center" }}>No stories to show right now. Please check back soon.</p>
+          ) : (
+            <div className="stories-grid">
+              {stories.map((f, i) => {
+                const pct = progressPercent(f.donationAmount, f.totalAmountRaised);
+                return (
+                  <Reveal key={f._id} delay={(i % 3) + 1}>
+                    <Link to={`/donate/${f._id}`} className="story-card" style={{ display: "block", color: "inherit" }}>
+                      <div className="story-media">
+                        <img src={optimizedImage(f.coverImage, 700)} alt={f.fundraiseTitle} loading="lazy" />
+                        <span className="story-raised">{formatPKR(f.donationAmount)} raised</span>
+                      </div>
+                      <div className="story-body">
+                        <span className="story-cat">{formatCategory(f.fundCategory)}</span>
+                        <h3 className="story-title">{f.fundraiseTitle}</h3>
+                        <p className="story-text">{excerpt(f)}</p>
+                        <div className="story-foot">
+                          <FiMapPin /> {f.cityName}
+                          <span className="badge badge-green">{pct >= 100 ? "Funded" : `${pct}% funded`}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  </Reveal>
+                );
+              })}
+            </div>
+          )}
 
           <div style={{ textAlign: "center", marginTop: "3rem" }}>
-            <Link to="/campaign" className="btn btn-primary btn-lg">
-              Start your own story <FiArrowRight />
+            <Link to="/fundraisers" className="btn btn-primary btn-lg">
+              See all campaigns <FiArrowRight />
             </Link>
           </div>
         </div>
