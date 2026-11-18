@@ -27,7 +27,7 @@ const AuthLayout = ({ title, subtitle, children }) => {
             </ul>
           </div>
           <div className="auth-brand-stat">
-            <strong>PKR 14M+</strong>
+            <strong>PKR 1.85M+</strong>
             <span>raised for verified causes across Pakistan</span>
           </div>
         </div>

@@ -4,8 +4,8 @@ import AnimatedCounter from "../AnimatedCounter";
 import Reveal from "../Reveal";
 
 const STATS = [
-  { prefix: "₨", value: 14, suffix: "M", format: "plain", label: "Raised for verified causes" },
-  { value: 850, suffix: "+", format: "plain", label: "Donors who gave with confidence" },
+  { prefix: "₨", value: 1.85, decimals: 2, suffix: "M+", format: "plain", label: "Raised for verified causes" },
+  { value: 250, suffix: "+", format: "plain", label: "Donors who gave with confidence" },
   { value: 60, suffix: "+", format: "plain", label: "Families directly helped" },
   { value: 100, suffix: "%", format: "plain", label: "Payments manually verified" },
 ];

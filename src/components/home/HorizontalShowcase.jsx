@@ -5,7 +5,7 @@ import useScrollProgress from "../../hooks/useScrollProgress";
 
 const PANELS = [
   { kind: "intro", eyebrow: "The Zaroorat difference", title: "Giving, made certain.", body: "Scroll across the reasons Pakistanis trust us with what matters most." },
-  { kind: "stat", value: "PKR 14M", label: "Raised for verified causes", note: "Every rupee tracked, every case reviewed." },
+  { kind: "stat", value: "PKR 1.85M+", label: "Raised for verified causes", note: "Every rupee tracked, every case reviewed." },
   { kind: "stat", value: "60+", label: "Families directly helped", note: "Real people, personally verified — not a statistic." },
   { kind: "stat", value: "55+", label: "Verified campaigns funded", note: "Each one reviewed by our team before it goes live." },
   { kind: "stat", value: "100%", label: "Payments manually verified", note: "No donation counts until our team confirms it." },

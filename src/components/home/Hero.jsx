@@ -1,12 +1,11 @@
 import { Fragment, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
-import useLiveTotal from "../../hooks/useLiveTotal";
 import useInView from "../../hooks/useInView";
 import Magnetic from "../Magnetic";
-import { formatPKR } from "../../utils/format";
 
-const GOAL = 18_000_000;
+const RAISED = 1_850_000;
+const GOAL = 2_500_000;
 
 const TITLE = [
   { t: "Every" },
@@ -17,8 +16,7 @@ const TITLE = [
 ];
 
 const Hero = () => {
-  const { total, bumped } = useLiveTotal({ base: 13_900_000, min: 400, max: 1600, interval: 4000 });
-  const pct = Math.min(100, Math.round((total / GOAL) * 100));
+  const pct = Math.round((RAISED / GOAL) * 100);
   const [titleRef, titleIn] = useInView({ threshold: 0.3 });
   const aetherRef = useRef(null);
 
@@ -83,17 +81,17 @@ const Hero = () => {
           </Magnetic>
         </div>
 
-        <div className={`hero-console glass ${bumped ? "bump" : ""}`}>
+        <div className="hero-console glass">
           <div className="console-line" style={{ width: `${pct}%` }} />
           <div className="console-cell console-live">
             <span className="console-label">
               <span className="live-dot" /> Raised to date
             </span>
-            <span className="console-value">{formatPKR(total)}</span>
+            <span className="console-value">PKR 1.85M+</span>
           </div>
           <div className="console-cell">
             <span className="console-label">Donors</span>
-            <span className="console-value">850+</span>
+            <span className="console-value">250+</span>
           </div>
           <div className="console-cell">
             <span className="console-label">Families helped</span>
