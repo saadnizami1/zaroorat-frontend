@@ -1,25 +1,43 @@
-import { FiStar } from "react-icons/fi";
 import { RiDoubleQuotesL } from "react-icons/ri";
 import Reveal from "../Reveal";
 
-const QUOTES = [
+// Summaries of real field-team cases (backups/team-cases-2026-11-18.json),
+// written from what the volunteer saw on the visit — not quotes from the families.
+const CASES = [
   {
-    text: "When my father needed urgent heart surgery, Zaroorat's community raised PKR 1.8 million in just nine days. The verification process gave every donor the confidence to give.",
-    name: "Bilal Ahmed",
+    lang: "ur",
+    text: "ملتان کے رکشہ ڈرائیور غلام رسول کے گردے ناکارہ ہو چکے ہیں۔ جنوری میں مفت علاج کی باری آنے تک انہیں ہر ہفتے ایک اضافی ڈائلیسس کی ضرورت ہے۔ ہماری رضاکار نے گھر جا کر ڈائلیسس کارڈ، ڈاکٹر کا نسخہ اور سینٹر کی رسیدیں خود دیکھیں۔",
+    name: "Ghulam Rasool",
+    city: "Multan",
+    verified: "Mehwish Tariq, field volunteer · 2 Nov 2026",
+  },
+  {
+    lang: "en",
+    text: "Aiman, an orphan in Lahore, scored 1,010 in her matric exams and wants to become a doctor, but her board fee and MDCAT preparation are out of reach. Our volunteer saw her result card, college enrolment slip and the academy's fee letter at her home.",
+    name: "Aiman",
     city: "Lahore",
-    initial: "B",
+    verified: "Hira Saleem, education volunteer · 12 Nov 2026",
   },
   {
-    text: "As a regular donor, I finally trust where my money goes. Every payment is checked, and I actually receive updates from the families I've helped. That changes everything.",
-    name: "Ayesha Siddiqui",
-    city: "Karachi",
-    initial: "A",
+    lang: "sd",
+    text: "حيدرآباد جي 64 سالن جي زبيده جي ٻنهي اکين ۾ موتيو آهي ۽ هن جي نظر گهٽجي رهي آهي. هوءَ رليون سبي پنهنجي ٻن يتيم پوٽن جو پيٽ پالي ٿي، پر هاڻي ٽانڪا به نٿي ڏسي سگهي. اسان جي رضاڪار سندس گهر وڃي اکين جي ڊاڪٽر جي رپورٽ ۽ اسپتال جو خرچ پاڻ ڏٺو.",
+    name: "Zubaida",
+    city: "Hyderabad",
+    verified: "Farhan Memon, volunteer coordinator · 21 Oct 2026",
   },
   {
-    text: "We funded a full year of school fees for 40 children through one campaign. Zaroorat made it effortless to share and impossible for anyone to doubt where the money went.",
-    name: "Imran Khalid",
-    city: "Islamabad",
-    initial: "I",
+    lang: "ur",
+    text: "گوجرانوالہ کی نصرت کے شوہر مارچ میں انتقال کر گئے۔ اب وہ اکیلے چار بچوں کو پال رہی ہیں اور اپنے پیروں پر کھڑے ہونے تک انہیں چھ ماہ کے بنیادی راشن کی ضرورت ہے۔ ہماری رضاکار نے ڈیتھ سرٹیفکیٹ اور کریانے کی دکان کا ادھار ریکارڈ خود دیکھا۔",
+    name: "Nusrat",
+    city: "Gujranwala",
+    verified: "Rabia Javed, field volunteer · 6 Nov 2026",
+  },
+  {
+    lang: "en",
+    text: "The solar pump that gave water to 60 families in a village near Mithi has broken down, and women now walk for hours to a distant well. Our volunteer met the village elders, saw the broken pump and got a technician's written repair estimate.",
+    name: "Village near Mithi",
+    city: "Tharparkar",
+    verified: "Dileep Kumar, field volunteer · 10 Oct 2026",
   },
 ];
 
@@ -28,27 +46,30 @@ const Testimonials = () => {
     <section className="section testi-section">
       <div className="container">
         <Reveal className="section-head center">
-          <span className="eyebrow center">Stories of trust</span>
-          <h2 className="section-title">Loved by donors and campaigners alike</h2>
+          <span className="eyebrow center">From our field visits</span>
+          <h2 className="section-title">Real cases, checked in person</h2>
         </Reveal>
 
         <div className="testi-grid">
-          {QUOTES.map((q, i) => (
-            <Reveal className="testi-card" key={q.name} delay={i + 1}>
-              <RiDoubleQuotesL className="testi-mark" />
-              <div className="testi-stars">
-                <FiStar /><FiStar /><FiStar /><FiStar /><FiStar />
-              </div>
-              <p className="testi-text">{q.text}</p>
-              <div className="testi-author">
-                <span className="testi-avatar">{q.initial}</span>
-                <span>
-                  <strong>{q.name}</strong>
-                  <span className="testi-city">{q.city}, Pakistan</span>
-                </span>
-              </div>
-            </Reveal>
-          ))}
+          {CASES.map((c, i) => {
+            const rtl = c.lang !== "en";
+            return (
+              <Reveal className="testi-card" key={c.name} delay={(i % 3) + 1}>
+                <RiDoubleQuotesL className="testi-mark" />
+                <p className={`testi-text${rtl ? ` testi-rtl testi-${c.lang}` : ""}`} lang={c.lang} dir={rtl ? "rtl" : "ltr"}>
+                  {c.text}
+                </p>
+                <div className="testi-author">
+                  <span className="testi-avatar">{c.name[0]}</span>
+                  <span>
+                    <strong>{c.name}</strong>
+                    <span className="testi-city">{c.city}, Pakistan</span>
+                    <span className="testi-verified">Verified by {c.verified}</span>
+                  </span>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

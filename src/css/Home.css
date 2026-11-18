@@ -488,7 +488,9 @@
    TESTIMONIALS
    ========================================================= */
 .testi-section { border-top: 1px solid var(--hairline); background: var(--bg); }
-.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 3.2rem; }
+.testi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.4rem; margin-top: 3.2rem; }
+.testi-grid > * { grid-column: span 2; }
+.testi-grid > :nth-child(4) { grid-column: 2 / span 2; }
 .testi-card {
   position: relative;
   background: var(--surface);
@@ -498,14 +500,16 @@
   transition: border-color var(--t), transform var(--t), box-shadow var(--t);
 }
 .testi-card:hover { border-color: var(--glass-border-2); transform: translateY(-4px); box-shadow: var(--shadow-md); }
-.testi-mark { font-family: var(--font-serif); font-size: 3rem; line-height: 1; color: var(--m-300); margin-bottom: 0.2rem; }
-.testi-stars { display: flex; gap: 0.2rem; color: var(--m-600); margin-bottom: 0.9rem; }
-.testi-stars svg { fill: var(--m-600); }
+.testi-mark { font-family: var(--font-serif); font-size: 3rem; line-height: 1; color: var(--m-300); margin-bottom: 0.9rem; }
 .testi-text { color: var(--text-soft); line-height: 1.75; flex: 1; }
+.testi-rtl { text-align: right; }
+.testi-ur { font-family: "Noto Nastaliq Urdu", serif; line-height: 2.3; font-size: 1.02rem; }
+.testi-sd { font-family: "Noto Naskh Arabic", serif; line-height: 2; font-size: 1.08rem; }
 .testi-author { display: flex; align-items: center; gap: 0.75rem; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--hairline); }
 .testi-avatar { width: 42px; height: 42px; display: grid; place-items: center; font-weight: 700; color: #fff; background: var(--m-700); }
 .testi-author strong { display: block; color: var(--text); }
 .testi-city { font-size: 0.85rem; color: var(--text-dim); }
+.testi-verified { display: block; margin-top: 0.15rem; font-size: 0.78rem; color: var(--m-700); }
 
 /* =========================================================
    HOME FAQ
@@ -542,6 +546,7 @@
    ========================================================= */
 @media (max-width: 1024px) {
   .testi-grid { grid-template-columns: 1fr; }
+  .testi-grid > *, .testi-grid > :nth-child(4) { grid-column: auto; }
   .cats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 860px) {
